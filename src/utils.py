@@ -1,3 +1,4 @@
+import math
 import re
 from typing import Any, Callable
 
@@ -34,17 +35,29 @@ def to_float(s: Any):
 
 
 def validate_and_parse_equation(equation_str: str) -> Callable[[float], float]:
-    allowed_pattern = r"^[x\d\s\+\-\*/\^(),\.]*$"
+    equation_str = equation_str.replace(",", ".").replace("^", "**")
+    allowed_functions = (
+        "("
+        + "|".join(
+            filter(
+                lambda s: not s.startswith("_")
+                and not s.endswith("_")
+                and s not in {"inf", "nan"},
+                math.__dict__.keys(),
+            )
+        )
+        + ")"
+    )
+    allowed_pattern = r"^[0-9+\-*/().^ \s" + allowed_functions + "]+$"
     if not re.match(allowed_pattern, equation_str):
         raise ValueError("Invalid characters in the equation")
-    equation_str = equation_str.replace("^", "**")
     x = sp.symbols("x")
     try:
-        expr = sp.sympify(equation_str.replace("^", "**"))
+        expr = sp.sympify(equation_str)
     except sp.SympifyError:
         raise ValueError("Invalid equation format")
     used_symbols = expr.free_symbols
-    if len(used_symbols) != 1 or x not in used_symbols:
+    if len(used_symbols) > 1:
         raise ValueError(
             f"Invalid variable(s) {used_symbols - {x}} in the equation. Only 'x' is allowed."
         )

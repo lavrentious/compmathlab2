@@ -5,6 +5,10 @@ from typing import Any, Callable
 import sympy as sp
 from scipy.differentiate import derivative
 
+from logger import GlobalLogger
+
+logger = GlobalLogger()
+
 
 def is_float(s: Any):
     if type(s) == float:
@@ -61,6 +65,7 @@ def validate_and_parse_equation(equation_str: str) -> Callable[[float], float]:
         raise ValueError(
             f"Invalid variable(s) {used_symbols - {x}} in the equation. Only 'x' is allowed."
         )
+    logger.debug("parsed expression", expr)
     func = sp.lambdify(x, expr, "math")
     return func
 

@@ -3,10 +3,20 @@ from typing import Callable, Tuple
 
 import numpy as np
 from PyQt6.QtCore import Qt
-from PyQt6.QtWidgets import (QComboBox, QGridLayout, QHBoxLayout, QHeaderView,
-                             QLabel, QLineEdit, QPushButton, QSizePolicy,
-                             QTableWidget, QTableWidgetItem, QVBoxLayout,
-                             QWidget)
+from PyQt6.QtWidgets import (
+    QComboBox,
+    QGridLayout,
+    QHBoxLayout,
+    QHeaderView,
+    QLabel,
+    QLineEdit,
+    QPushButton,
+    QSizePolicy,
+    QTableWidget,
+    QTableWidgetItem,
+    QVBoxLayout,
+    QWidget,
+)
 
 from config import EPS
 from gui.components.plot_container import PlotContainer
@@ -133,24 +143,25 @@ class SingleTab(QWidget):
             SolutionMethod(self.method_combobox.currentText()),
         )
 
+    def parse_validate_plot(self):
+        equation, interval_l, interval_r, precision, solution_method = (
+            self._parse_values()
+        )
+        fn = validate_and_parse_equation(equation)
+        self.plot_function(fn, interval_l, interval_r)
+        return fn, interval_l, interval_r, precision, solution_method
+
     def solve_equation(self):
         try:
-            equation, interval_l, interval_r, precision, solution_method = (
-                self._parse_values()
+            fn, interval_l, interval_r, precision, solution_method = (
+                self.parse_validate_plot()
             )
         except ValueError as e:
             show_error_message(str(e))
             return
-        logger.debug("solving equation", equation)
         logger.debug("interval", interval_l, interval_r)
         logger.debug("precision", precision)
-        try:
-            fn = validate_and_parse_equation(equation)
-        except ValueError as e:
-            show_error_message(str(e))
-            return
 
-        self.plot_function(fn, interval_l, interval_r)
         solver = Solver()
         if not solver.check_single_root(fn, interval_l, interval_r):
             show_error_message("there is not exactly 1 root in the interval")
@@ -169,7 +180,7 @@ class SingleTab(QWidget):
                     expr = open_input_dialog(
                         self,
                         "о-оу",
-                        "я глупенький робот =( выразите мне пожалуйста x:",
+                        "оооой я глупенький робот я не умею решать уравнения =( выразите мне пожалуйста x:",
                     )
                     if expr is None:
                         return None

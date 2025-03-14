@@ -1,5 +1,7 @@
+import os
 import sys
 
+from PyQt6 import QtGui
 from PyQt6.QtWidgets import QApplication
 
 from argparser import ArgParser
@@ -22,6 +24,9 @@ def run() -> None:
         return
 
     app = QApplication(sys.argv)
+    scriptDir = os.path.dirname(os.path.realpath(__file__))
+    path = os.path.abspath(os.path.join(scriptDir, "..", "assets", "icon.png"))
+    app.setWindowIcon(QtGui.QIcon(path))
     window = EquationSolverApp()
     window.show()
     sys.exit(app.exec())

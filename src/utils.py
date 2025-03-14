@@ -66,7 +66,9 @@ def validate_and_parse_equation(equation_str: str) -> Callable[[float], float]:
 
 
 def df(f: Callable[[float], float], x: float) -> float:
-    return derivative(f, x)["df"]
+    # return derivative(f, x)["df"]
+    H = 0.0001
+    return (f(x + H) - f(x - H)) / (2 * H)
 
 
 def d2f(f: Callable[[float], float], x: float) -> float:

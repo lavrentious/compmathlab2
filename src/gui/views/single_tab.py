@@ -3,24 +3,14 @@ from typing import Callable, Tuple
 
 import numpy as np
 from PyQt6.QtCore import Qt
-from PyQt6.QtWidgets import (
-    QComboBox,
-    QGridLayout,
-    QHBoxLayout,
-    QHeaderView,
-    QLabel,
-    QLineEdit,
-    QPushButton,
-    QSizePolicy,
-    QTableWidget,
-    QTableWidgetItem,
-    QVBoxLayout,
-    QWidget,
-)
+from PyQt6.QtWidgets import (QComboBox, QGridLayout, QHBoxLayout, QHeaderView,
+                             QLabel, QLineEdit, QPushButton, QSizePolicy,
+                             QTableWidget, QTableWidgetItem, QVBoxLayout,
+                             QWidget)
 
 from config import EPS
 from gui.components.plot_container import PlotContainer
-from gui.guiutils import open_input_dialog, show_error_message
+from gui.guiutils import show_error_message
 from logger import GlobalLogger
 from solvers.chord_solver import ChordSolver
 from solvers.fixed_point_iteration_solver import FixedPointIterationSolver
@@ -184,27 +174,8 @@ class SingleTab(QWidget):
             logger.debug("using newton")
             solver = NewtonSolver()
         elif solution_method == SolutionMethod.FIXED_POINT_ITERATION:
-
-            def ask_user_for_g():
-                try:
-                    expr = open_input_dialog(
-                        self,
-                        "о-оу",
-                        "оооой я глупенький робот я не умею решать уравнения =( выразите мне пожалуйста x:",
-                    )
-                    if expr is None:
-                        return None
-                    return validate_and_parse_equation(expr)
-                except ValueError as e:
-                    show_error_message(str(e))
-                    return None
-
             logger.debug("using fixed point iteration")
             solver = FixedPointIterationSolver()
-            g = ask_user_for_g()
-            if g is None:
-                return
-            solver.set_g(g)
 
         if not solver.check_convergence(fn, interval_l, interval_r):
             show_error_message("method does not converge")

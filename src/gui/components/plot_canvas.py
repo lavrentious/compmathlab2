@@ -1,8 +1,7 @@
 from typing import List
 
 import matplotlib.pyplot as plt
-from matplotlib.backends.backend_qt5agg import \
-    FigureCanvasQTAgg as FigureCanvas
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 
 
 class PlotCanvas(FigureCanvas):
@@ -14,8 +13,10 @@ class PlotCanvas(FigureCanvas):
         super().__init__(self.figure)
         self.ax.autoscale(False)
 
-    def plot_function(self, x_vals: List[float], y_vals: List[float], label: str):
+    def clear(self):
         self.ax.clear()
+
+    def plot_function(self, x_vals: List[float], y_vals: List[float], label: str):
         self.ax.plot(x_vals, y_vals, label=label)
         self.ax.axhline(0, color="gray", lw=0.5)
         self.ax.axvline(0, color="gray", lw=0.5)

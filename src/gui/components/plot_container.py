@@ -28,14 +28,6 @@ class PlotContainer(QWidget):
 
         # self.canvas.ax.callbacks.connect("xlim_changed", replot_fn) # TODO
 
-    def replot_fn(self, event_ax):
-        x_min, x_max = self.ax.get_xlim()
-        new_x = np.linspace(x_min, x_max, X_POINTS_PER_PLOT)
-        new_y = [self.fn(x) for x in new_x]
-
-        self.line.set_data(new_x, new_y)
-        self.canvas.draw()
-
     def set_fn(
         self, fn: Callable[[float], float], interval_l: float, interval_r: float
     ):

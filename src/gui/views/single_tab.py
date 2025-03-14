@@ -218,5 +218,6 @@ class SingleTab(QWidget):
         w = r - l
         xs = np.linspace(l - w * 0.1, r + w * 0.1, 1000)
         ys = [fn(x) for x in xs]
+        self.plot_container.canvas.clear()
         self.plot_container.canvas.plot_function(xs, ys, "f(x)")
         self.plot_container.canvas.highlight_x_interval(l, r)

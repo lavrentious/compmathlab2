@@ -44,6 +44,7 @@ class SingleTab(QWidget):
     precision_input: QLineEdit
     method_combobox: QComboBox
     solve_button: QPushButton
+    plot_button: QPushButton
     result_table: QTableWidget
     plot_container: PlotContainer
 
@@ -65,6 +66,9 @@ class SingleTab(QWidget):
         self.interval_r_input = QLineEdit()
         hbox0.addWidget(self.interval_r_input)
         vbox0.addLayout(hbox0)
+        self.plot_button = QPushButton("Plot")
+        self.plot_button.clicked.connect(self.manual_plot)
+        vbox0.addWidget(self.plot_button)
         vbox0.addWidget(QLabel("Precision:"))
         self.precision_input = QLineEdit()
         self.precision_input.setPlaceholderText(f"default={EPS}")
@@ -150,6 +154,12 @@ class SingleTab(QWidget):
         fn = validate_and_parse_equation(equation)
         self.plot_function(fn, interval_l, interval_r)
         return fn, interval_l, interval_r, precision, solution_method
+
+    def manual_plot(self):
+        try:
+            self.parse_validate_plot()
+        except ValueError as e:
+            show_error_message(str(e))
 
     def solve_equation(self):
         try:

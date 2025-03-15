@@ -1,7 +1,7 @@
 import math
 import re
 from typing import Any, Callable
-
+from io import TextIOWrapper
 import sympy as sp
 from scipy.differentiate import derivative
 
@@ -79,3 +79,17 @@ def df(f: Callable[[float], float], x: float) -> float:
 def d2f(f: Callable[[float], float], x: float) -> float:
     H = 0.0001
     return (f(x + H) - 2 * f(x) + f(x - H)) / H**2
+
+
+class ResWriter:
+    out_stream: None | TextIOWrapper
+
+    def __init__(self, out_stream):
+        self.out_stream = out_stream
+
+    def write(self, equation_str: str, x: float, y: float, iterations: int):
+        self.out_stream.write(f"{equation_str=}\n{x=}\nf(x)={y}\n{iterations=}")
+        self.out_stream.flush()
+
+    def destroy(self):
+        self.out_stream.close()

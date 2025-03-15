@@ -3,10 +3,21 @@ from typing import Callable, Tuple
 
 import numpy as np
 from PyQt6.QtCore import Qt
-from PyQt6.QtWidgets import (QComboBox, QGridLayout, QHBoxLayout, QHeaderView,
-                             QLabel, QLineEdit, QPushButton, QSizePolicy,
-                             QTableWidget, QTableWidgetItem, QVBoxLayout,
-                             QWidget)
+from PyQt6.QtWidgets import (
+    QComboBox,
+    QFileDialog,
+    QGridLayout,
+    QHBoxLayout,
+    QHeaderView,
+    QLabel,
+    QLineEdit,
+    QPushButton,
+    QSizePolicy,
+    QTableWidget,
+    QTableWidgetItem,
+    QVBoxLayout,
+    QWidget,
+)
 
 from config import EPS
 from gui.components.plot_container import PlotContainer
@@ -17,6 +28,7 @@ from solvers.fixed_point_iteration_solver import FixedPointIterationSolver
 from solvers.newton_solver import NewtonSolver
 from solvers.solver import Solver
 from utils import is_float, to_float, validate_and_parse_equation
+from utils import ResWriter
 
 logger = GlobalLogger()
 
@@ -28,6 +40,7 @@ class SolutionMethod(Enum):
 
 
 class SingleTab(QWidget):
+    result: Tuple[str, float, float, int] | None = None
     equation_input: QLineEdit
     interval_l_input: QLineEdit
     interval_r_input: QLineEdit
@@ -37,9 +50,11 @@ class SingleTab(QWidget):
     plot_button: QPushButton
     result_table: QTableWidget
     plot_container: PlotContainer
+    save_to_file_button: QPushButton
 
     def __init__(self):
         super().__init__()
+
         grid0 = QGridLayout()
 
         vbox0 = QVBoxLayout()
@@ -93,7 +108,11 @@ class SingleTab(QWidget):
             QSizePolicy.Policy.MinimumExpanding, QSizePolicy.Policy.Fixed
         )
         self.result_table.setFixedHeight(50)
-        grid0.addWidget(self.result_table, 7, 0, 1, 1)
+        grid0.addWidget(self.result_table, 6, 0, 1, 1)
+
+        self.save_to_file_button = QPushButton("Save to file")
+        self.save_to_file_button.clicked.connect(self.save_to_file)
+        grid0.addWidget(self.save_to_file_button, 7, 0, 1, 1)
 
         self.plot_container = PlotContainer()
         self.plot_container.setSizePolicy(
@@ -106,6 +125,7 @@ class SingleTab(QWidget):
         self.setLayout(grid0)
 
     def set_result(self, x: float, y: float, iterations: int):
+        self.result = (self.equation_input.text(), x, y, iterations)
         self.result_table.setItem(0, 0, QTableWidgetItem(str(x)))
         self.result_table.setItem(0, 1, QTableWidgetItem(str(y)))
         self.result_table.setItem(0, 2, QTableWidgetItem(str(iterations)))
@@ -150,6 +170,18 @@ class SingleTab(QWidget):
             self.parse_validate_plot()
         except ValueError as e:
             show_error_message(str(e))
+
+    def save_to_file(self):
+        if not self.result:
+            show_error_message("эээ баклан")
+            return
+        equation_str, x, y, iterations = self.result
+        file_path, _ = QFileDialog.getSaveFileName(
+            self, "Open File", "", "All Files (*)"
+        )
+        res_writer = ResWriter(open(file_path, "w"))
+        res_writer.write(equation_str, x, y, iterations)
+        res_writer.destroy()
 
     def solve_equation(self):
         try:

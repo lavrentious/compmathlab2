@@ -1,6 +1,7 @@
 from typing import Tuple
 
 from solvers.solver import Solver
+from utils.math import signs_equal
 
 
 class ChordSolver(Solver):
@@ -10,7 +11,7 @@ class ChordSolver(Solver):
         iterations = 0
         while True:
             x = a - (b - a) / (f(b) - f(a)) * f(a)
-            if self.signs_equal(f(x), f(a)):
+            if signs_equal(f(x), f(a)):
                 a = x
             else:
                 b = x

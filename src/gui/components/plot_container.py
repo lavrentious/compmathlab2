@@ -1,6 +1,5 @@
 from typing import Callable
 
-import numpy as np
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT
 from PyQt6.QtWidgets import QVBoxLayout, QWidget
 

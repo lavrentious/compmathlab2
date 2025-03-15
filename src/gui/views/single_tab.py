@@ -27,8 +27,9 @@ from solvers.chord_solver import ChordSolver
 from solvers.fixed_point_iteration_solver import FixedPointIterationSolver
 from solvers.newton_solver import NewtonSolver
 from solvers.solver import Solver
-from utils import is_float, to_float, validate_and_parse_equation
-from utils import ResWriter
+from utils.math import check_single_root
+from utils.parsing import ResWriter, validate_and_parse_equation
+from utils.validation import is_float, to_float
 
 logger = GlobalLogger()
 
@@ -144,7 +145,7 @@ class SingleTab(QWidget):
         if not interval_r:
             raise ValueError("Interval R is empty")
         if not precision:
-            precision = EPS
+            precision = str(EPS)
         if not is_float(interval_l):
             raise ValueError("Interval L is not a float")
         if not is_float(interval_r):
@@ -197,7 +198,7 @@ class SingleTab(QWidget):
         logger.debug("precision", precision)
 
         solver = Solver()
-        if not solver.check_single_root(fn, interval_l, interval_r):
+        if not check_single_root(fn, interval_l, interval_r):
             show_error_message("there is not exactly 1 root in the interval")
             return
 
@@ -224,5 +225,5 @@ class SingleTab(QWidget):
         xs = np.linspace(l - w * 0.1, r + w * 0.1, 1000)
         ys = [fn(x) for x in xs]
         self.plot_container.canvas.clear()
-        self.plot_container.canvas.plot_function(xs, ys, "f(x)")
+        self.plot_container.canvas.plot_function(list(xs), ys, "f(x)")
         self.plot_container.canvas.highlight_x_interval(l, r)

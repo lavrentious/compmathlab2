@@ -1,7 +1,8 @@
 from typing import List
 
 import matplotlib.pyplot as plt
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.backends.backend_qt5agg import \
+    FigureCanvasQTAgg as FigureCanvas
 
 
 class PlotCanvas(FigureCanvas):

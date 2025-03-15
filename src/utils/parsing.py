@@ -1,41 +1,15 @@
+import sys
 import math
 import re
-from typing import Any, Callable
 from io import TextIOWrapper
-import sympy as sp
-from scipy.differentiate import derivative
+from typing import Any, Callable
+
+# sympy has no types :(
+import sympy as sp  # type: ignore
 
 from logger import GlobalLogger
 
 logger = GlobalLogger()
-
-
-def is_float(s: Any):
-    if type(s) == float:
-        return True
-    if type(s) == str:
-        s = s.replace(",", ".")
-    try:
-        float(s)
-        return True
-    except ValueError:
-        return False
-
-
-def is_int(s: Any):
-    try:
-        int(s)
-        return True
-    except ValueError:
-        return False
-
-
-def to_float(s: Any):
-    if type(s) == float:
-        return s
-    if type(s) == str:
-        s = s.replace(",", ".")
-    return float(s)
 
 
 def validate_and_parse_equation(equation_str: str) -> Callable[[float], float]:
@@ -70,21 +44,10 @@ def validate_and_parse_equation(equation_str: str) -> Callable[[float], float]:
     return func
 
 
-def df(f: Callable[[float], float], x: float) -> float:
-    # return derivative(f, x)["df"]
-    H = 0.0001
-    return (f(x + H) - f(x - H)) / (2 * H)
-
-
-def d2f(f: Callable[[float], float], x: float) -> float:
-    H = 0.0001
-    return (f(x + H) - 2 * f(x) + f(x - H)) / H**2
-
-
 class ResWriter:
-    out_stream: None | TextIOWrapper
+    out_stream: TextIOWrapper | Any
 
-    def __init__(self, out_stream):
+    def __init__(self, out_stream: TextIOWrapper | Any = sys.stdout):
         self.out_stream = out_stream
 
     def write(self, equation_str: str, x: float, y: float, iterations: int):

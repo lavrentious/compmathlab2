@@ -1,8 +1,8 @@
 from typing import Tuple
 
 from solvers.solver import Solver
-from utils import d2f as _d2f
-from utils import df as _df
+from utils.math import d2f as _d2f, keeps_sign
+from utils.math import df as _df
 
 
 class NewtonSolver(Solver):
@@ -10,7 +10,7 @@ class NewtonSolver(Solver):
         df = lambda x: _df(f, x)
         d2f = lambda x: _d2f(f, x)
 
-        if not self.keeps_sign(df, l, r) or not self.keeps_sign(d2f, l, r):
+        if not keeps_sign(df, l, r) or not keeps_sign(d2f, l, r):
             return False
 
         # f' = 0

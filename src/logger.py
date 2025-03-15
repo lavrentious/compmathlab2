@@ -4,11 +4,15 @@ from typing import Any
 
 
 class LogLevel(Enum):
-    DEBUG = "DEBUG"
-    INFO = "INFO"
-    WARNING = "WARNING"
-    ERROR = "ERROR"
-    CRITICAL = "CRITICAL"
+    DEBUG = 1
+    INFO = 2
+    WARNING = 3
+    ERROR = 4
+    CRITICAL = 5
+
+
+def log_level_to_str(level: LogLevel) -> str:
+    return level.name
 
 
 class Logger:
@@ -29,9 +33,9 @@ class Logger:
         sep: str = " ",
         end: str = "\n",
     ) -> None:
-        if level._sort_order_ < self.min_level._sort_order_:
+        if level.value < self.min_level.value:
             return
-        print(f"[{level.value}]", *args, sep=sep, end=end, file=self.file)
+        print(f"[{log_level_to_str(level)}]", *args, sep=sep, end=end, file=self.file)
 
     def debug(self, *args: Any, sep: str = " ", end: str = "\n") -> None:
         self.log(*args, level=LogLevel.DEBUG, sep=sep, end=end)

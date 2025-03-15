@@ -89,25 +89,27 @@ class SingleTab(QWidget):
         vbox0.setAlignment(Qt.AlignmentFlag.AlignTop)
         grid0.setRowStretch(0, 1)
 
-        self.result_table = QTableWidget(1, 3)
-        self.result_table.setHorizontalHeaderLabels(["x", "f(x)", "iterations"])
-        self.result_table.verticalHeader().setVisible(False)
+        self.result_table = QTableWidget(3, 1)
+        font = self.result_table.font()
+        font.setFamily("Courier New")
+        self.result_table.setFont(font)
+        self.result_table.setVerticalHeaderLabels(["x", "f(x)", "iterations"])
+        self.result_table.horizontalHeader().setVisible(False)
         self.result_table.setHorizontalScrollBarPolicy(
             Qt.ScrollBarPolicy.ScrollBarAlwaysOff
         )
         self.result_table.setVerticalScrollBarPolicy(
             Qt.ScrollBarPolicy.ScrollBarAlwaysOff
         )
-        self.result_table.horizontalHeader().setSectionResizeMode(
+        self.result_table.verticalHeader().setSectionResizeMode(
             QHeaderView.ResizeMode.Stretch
         )
-        self.result_table.verticalHeader().setSectionResizeMode(
+        self.result_table.horizontalHeader().setSectionResizeMode(
             QHeaderView.ResizeMode.Stretch
         )
         self.result_table.setSizePolicy(
             QSizePolicy.Policy.MinimumExpanding, QSizePolicy.Policy.Fixed
         )
-        self.result_table.setFixedHeight(50)
         grid0.addWidget(self.result_table, 6, 0, 1, 1)
 
         self.save_to_file_button = QPushButton("Save to file")
@@ -127,8 +129,8 @@ class SingleTab(QWidget):
     def set_result(self, x: float, y: float, iterations: int):
         self.result = (self.equation_input.text(), x, y, iterations)
         self.result_table.setItem(0, 0, QTableWidgetItem(str(x)))
-        self.result_table.setItem(0, 1, QTableWidgetItem(str(y)))
-        self.result_table.setItem(0, 2, QTableWidgetItem(str(iterations)))
+        self.result_table.setItem(1, 0, QTableWidgetItem(str(y)))
+        self.result_table.setItem(2, 0, QTableWidgetItem(str(iterations)))
 
     def _parse_values(self) -> Tuple[str, float, float, float, SolutionMethod]:
         equation = self.equation_input.text()

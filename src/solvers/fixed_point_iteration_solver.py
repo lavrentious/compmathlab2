@@ -1,7 +1,7 @@
-from typing import Callable, Tuple
+from typing import Tuple
 
 from solvers.solver import Solver
-from utils.math import df as _df
+from utils.equations import Equation
 
 
 class FixedPointIterationSolver(Solver):
@@ -14,8 +14,13 @@ class FixedPointIterationSolver(Solver):
     def get_starting_point(self, f, l, r):
         return (l + r) / 2
 
-    def solve(self, fn, interval_l, interval_r, precision):
-        phi, _ = self.get_phi(fn, interval_l, interval_r)
+    def solve(self, equation: Equation, precision: float) -> Tuple[float, int]:
+        interval_l, interval_r, fn, phi = (
+            equation.interval_l,
+            equation.interval_r,
+            equation.f,
+            equation.phi,
+        )
         x = self.get_starting_point(fn, interval_l, interval_r)
         prev_x = x - 10 * precision
         iterations = 0
@@ -27,9 +32,12 @@ class FixedPointIterationSolver(Solver):
             prev_x = x
         raise ValueError("no convergence")
 
-    def check_convergence(self, f, l, r):
-        _, dphi = get_phi(f, l, r)
-
+    def check_convergence(self, equation: Equation):
+        l, r, dphi = (
+            equation.interval_l,
+            equation.interval_r,
+            equation.dphi,
+        )
         d = (r - l) / self.SAMPLES_COUNT
         x = l
         while x <= r:

@@ -1,4 +1,6 @@
-from typing import Callable, Tuple
+from typing import Tuple
+
+from utils.equations import Equation
 
 
 class Solver:
@@ -9,9 +11,7 @@ class Solver:
 
     def solve(
         self,
-        fn: Callable[[float], float],
-        interval_l: float,
-        interval_r: float,
+        equation: Equation,
         precision: float,
     ) -> Tuple[float, int]:
         """
@@ -19,7 +19,5 @@ class Solver:
         """
         return 0, 0
 
-    def check_convergence(
-        self, f: Callable[[float], float], l: float, r: float
-    ) -> bool:
+    def check_convergence(self, equation: Equation) -> bool:
         return True

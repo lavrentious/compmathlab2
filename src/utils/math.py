@@ -1,5 +1,7 @@
 from typing import Callable, Tuple
 
+import sympy as sp  # type: ignore
+
 SAMPLES_COUNT = 1000
 
 
@@ -73,17 +75,21 @@ def check_single_root(f: Callable[[float], float], l: float, r: float):
 
 
 def get_phi_with_lambda(
-    f: Callable[[float], float], l: float, r: float
-) -> Tuple[Callable[[float], float], Callable[[float], float]]:
+    f: sp.Lambda, l: float, r: float
+) -> Tuple[sp.Lambda, sp.Lambda]:
     """
     returns phi and phi' for a single variable function with lambda method
     """
-    _df = lambda x: df(f, x)
+    x = sp.symbols("x")
+    f_expr = f(x)
 
-    m = 1 / max_in_interval(lambda x: abs(_df(x)), l, r)
-    if _df((l + r) / 2) > 0:
+    _df = sp.diff(f_expr, x)
+    m = 1 / max_in_interval(lambda x: abs(_df.subs(x, x)), l, r)
+
+    if _df.subs(x, (l + r) / 2) > 0:
         m *= -1
-    print(f"{m=}")
-    phi = lambda x: x + m * f(x)
-    dphi = lambda x: 1 + m * _df(x)
+
+    phi = sp.Lambda(x, x + m * f_expr)
+    dphi = sp.Lambda(x, 1 + m * _df)
+
     return phi, dphi

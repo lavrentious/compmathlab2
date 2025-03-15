@@ -27,8 +27,9 @@ from solvers.chord_solver import ChordSolver
 from solvers.fixed_point_iteration_solver import FixedPointIterationSolver
 from solvers.newton_solver import NewtonSolver
 from solvers.solver import Solver
+from utils.equations import Equation
 from utils.math import check_single_root
-from utils.parsing import ResWriter, validate_and_parse_equation
+from utils.writer import ResWriter
 from utils.validation import is_float, to_float
 
 logger = GlobalLogger()
@@ -41,7 +42,7 @@ class SolutionMethod(Enum):
 
 
 class SingleTab(QWidget):
-    result: Tuple[str, float, float, int] | None = None
+    result: Tuple[Equation, float, float, int] | None = None
     equation_input: QLineEdit
     interval_l_input: QLineEdit
     interval_r_input: QLineEdit
@@ -127,8 +128,8 @@ class SingleTab(QWidget):
         grid0.setColumnStretch(1, 0)
         self.setLayout(grid0)
 
-    def set_result(self, x: float, y: float, iterations: int):
-        self.result = (self.equation_input.text(), x, y, iterations)
+    def set_result(self, equation: Equation, x: float, y: float, iterations: int):
+        self.result = (equation, x, y, iterations)
         self.result_table.setItem(0, 0, QTableWidgetItem(str(x)))
         self.result_table.setItem(1, 0, QTableWidgetItem(str(y)))
         self.result_table.setItem(2, 0, QTableWidgetItem(str(iterations)))
@@ -160,13 +161,13 @@ class SingleTab(QWidget):
             SolutionMethod(self.method_combobox.currentText()),
         )
 
-    def parse_validate_plot(self):
-        equation, interval_l, interval_r, precision, solution_method = (
+    def parse_validate_plot(self) -> Tuple[Equation, float, SolutionMethod]:
+        equation_str, interval_l, interval_r, precision, solution_method = (
             self._parse_values()
         )
-        fn = validate_and_parse_equation(equation)
-        self.plot_function(fn, interval_l, interval_r)
-        return fn, interval_l, interval_r, precision, solution_method
+        equation = Equation(interval_l, interval_r, equation_str=equation_str)
+        self.plot_function(equation.f, equation.interval_l, equation.interval_r)
+        return equation, precision, solution_method
 
     def manual_plot(self):
         try:
@@ -178,27 +179,25 @@ class SingleTab(QWidget):
         if not self.result:
             show_error_message("эээ баклан")
             return
-        equation_str, x, y, iterations = self.result
+        equation, x, y, iterations = self.result
         file_path, _ = QFileDialog.getSaveFileName(
             self, "Open File", "", "All Files (*)"
         )
         res_writer = ResWriter(open(file_path, "w"))
-        res_writer.write(equation_str, x, y, iterations)
+        res_writer.write(equation, x, y, iterations)
         res_writer.destroy()
 
     def solve_equation(self):
         try:
-            fn, interval_l, interval_r, precision, solution_method = (
-                self.parse_validate_plot()
-            )
+            equation, precision, solution_method = self.parse_validate_plot()
         except ValueError as e:
             show_error_message(str(e))
             return
-        logger.debug("interval", interval_l, interval_r)
+        logger.debug("interval", equation.interval_l, equation.interval_r)
         logger.debug("precision", precision)
 
         solver = Solver()
-        if not check_single_root(fn, interval_l, interval_r):
+        if not check_single_root(equation.f, equation.interval_l, equation.interval_r):
             show_error_message("there is not exactly 1 root in the interval")
             return
 
@@ -212,13 +211,13 @@ class SingleTab(QWidget):
             logger.debug("using fixed point iteration")
             solver = FixedPointIterationSolver()
 
-        if not solver.check_convergence(fn, interval_l, interval_r):
+        if not solver.check_convergence(equation):
             show_error_message("method does not converge")
             return
-        res = solver.solve(fn, interval_l, interval_r, precision)
+        res = solver.solve(equation, precision)
         if res:
             x, iterations = res
-            self.set_result(x, fn(x), iterations)
+            self.set_result(equation, x, equation.f(x), iterations)
 
     def plot_function(self, fn: Callable[[float], float], l: float, r: float):
         w = r - l

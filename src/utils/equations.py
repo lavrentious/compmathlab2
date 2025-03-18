@@ -1,10 +1,12 @@
 import math
-import sympy as sp  # type: ignore
 import re
+
+import sympy as sp  # type: ignore
+
 from logger import GlobalLogger
-from utils.math import get_phi_with_lambda
-from utils.math import df as _df
 from utils.math import d2f as _d2f
+from utils.math import df as _df
+from utils.math import get_phi_with_lambda
 
 logger = GlobalLogger()
 
@@ -54,7 +56,9 @@ class Equation:
             )
             self.df = sp.Lambda(sp.symbols("x"), lambda x: _df(f, x))
         try:
-            self.d2f = sp.Lambda(sp.symbols("x"), sp.diff(self.df.expr, sp.symbols("x")))
+            self.d2f = sp.Lambda(
+                sp.symbols("x"), sp.diff(self.df.expr, sp.symbols("x"))
+            )
         except sp.SympifyError as e:
             logger.warning(
                 f"sympy could not differentiate {self.df_str()}, {interval_l=}, {interval_r=} (second derivative); falling back to stupid differentiation\n{e}"
@@ -108,3 +112,54 @@ class Equation:
         logger.debug("parsed expression", expr)
         func = sp.Lambda(x, expr)
         return func
+
+
+class MultivariableEquation:
+    # f(x1, ..., xn) = 0
+    f: sp.Lambda
+    df: sp.Lambda
+    d2f: sp.Lambda
+
+    # phi_lhs = phi(x1 , ..., xn)
+    # e.g. phi_lhs = x3
+    phi_lhs: sp.Symbol
+    phi: sp.Lambda
+    dphi: sp.Lambda
+
+    def __init__(self, f: sp.Lambda, phi_lhs: sp.Symbol, phi: sp.Expr):
+        self.f = f
+        self.phi = sp.Lambda(f.expr.free_symbols, phi)
+        self.phi_lhs = phi_lhs
+        self.df = sp.Lambda(self.phi_lhs, sp.diff(self.f.expr, self.phi_lhs))
+        self.dphi = sp.Lambda(self.phi_lhs, sp.diff(self.phi.expr, self.phi_lhs))
+
+    def f_str(self):
+        return str(self.f.expr)
+
+
+SYSTEM_PRESETS = [
+    [
+        MultivariableEquation(
+            sp.Lambda(sp.symbols("x1, x2"), "0.1*x1**2 + x1 + 0.2*x2**2 - 0.3"),
+            sp.Symbol("x1"),
+            "0.3 - 0.1*x1**2 - 0.2*x2**2",
+        ),
+        MultivariableEquation(
+            sp.Lambda(sp.symbols("x1, x2"), "0.2*x1**2 + x2 + 0.1*x1*x2 - 0.7"),
+            sp.Symbol("x2"),
+            "0.7 - 0.2*x1**2 - 0.1*x1*x2",
+        ),
+    ],
+    [
+        MultivariableEquation(
+            sp.Lambda(sp.symbols("x, y"), "x**2 + y**2 - 4"),
+            sp.Symbol("x"),
+            "sqrt(4 - y**2)",
+        ),
+        MultivariableEquation(
+            sp.Lambda(sp.symbols("x1, x2"), "-3*x**2 + y"),
+            sp.Symbol("y"),
+            "3*x**2",
+        ),
+    ],
+]

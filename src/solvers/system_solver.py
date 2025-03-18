@@ -1,5 +1,7 @@
 from typing import Callable, List, Tuple
 
+from utils.equations import MultivariableEquation
+
 
 class SystemSolver:
     SAMPLES_COUNT = 1000
@@ -9,13 +11,13 @@ class SystemSolver:
 
     def solve(
         self,
-        fs: List[Callable[[float], float]],
+        fs: List[MultivariableEquation],
         precision: float,
-    ) -> Tuple[float, int]:
+    ) -> Tuple[List[float], int]:
         """
         @returns (x, iterations)
         """
-        return 0, 0
+        return [], 0
 
-    def check_convergence(self, fs: List[Callable[[float], float]]):
+    def check_convergence(self, fs: List[MultivariableEquation]):
         pass

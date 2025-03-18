@@ -1,6 +1,8 @@
-from typing import List, Tuple
+from typing import Tuple
 
-from utils.equations import EquationSystem, MultivariableEquation
+import sympy as sp  # type: ignore
+
+from utils.equations import EquationSystem, EquationSystemSolution
 
 
 class SystemSolver:
@@ -13,11 +15,11 @@ class SystemSolver:
         self,
         system: EquationSystem,
         precision: float,
-    ) -> Tuple[List[float], int]:
+    ) -> Tuple[EquationSystemSolution, int]:
         """
         @returns (x, iterations)
         """
-        return [], 0
+        return {}, 0
 
     def check_convergence(self, system: EquationSystem):
         pass

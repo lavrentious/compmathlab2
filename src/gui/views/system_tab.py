@@ -23,7 +23,7 @@ from gui.guiutils import show_error_message
 from logger import GlobalLogger
 from solvers.fixed_point_iteration_system_solver import FixedPointIterationSystemSolver
 from solvers.system_solver import SystemSolver
-from utils.equations import SYSTEM_PRESETS, EquationSystem, MultivariableEquation
+from utils.equations import SYSTEM_PRESETS, EquationSystem, EquationSystemSolution
 from utils.validation import is_float, to_float
 from utils.writer import ResWriter
 
@@ -35,7 +35,9 @@ class SolutionMethod(Enum):
 
 
 class SystemTab(QWidget):
-    result: Tuple[List[str], List[float], List[float], int] | None = None
+    result: Tuple[EquationSystem, EquationSystemSolution, List[float], int] | None = (
+        None  # system ; result map ; equations(x1, ... xn) ; iteration count
+    )
     equation_system: EquationSystem | None = None
     equation_inputs: List[QLineEdit]
     precision_input: QLineEdit
@@ -148,10 +150,12 @@ class SystemTab(QWidget):
             self.equation_inputs.append(equation_input)
             self.equations_vbox.addWidget(equation_input)
 
-    def set_result(self, x: List[float], y: List[float], iterations: int):
-        self.result = ([i.text() for i in self.equation_inputs], x, y, iterations)
-        self.result_table.setItem(0, 0, QTableWidgetItem(str(x)))
-        self.result_table.setItem(0, 1, QTableWidgetItem(str(y)))
+    def set_result(self, xs: EquationSystemSolution, ys: List[float], iterations: int):
+        if self.equation_system is None:
+            return
+        self.result = (self.equation_system, xs, ys, iterations)
+        self.result_table.setItem(0, 0, QTableWidgetItem(str(xs)))
+        self.result_table.setItem(0, 1, QTableWidgetItem(str(ys)))
         self.result_table.setItem(0, 2, QTableWidgetItem(str(iterations)))
 
     def _parse_values(
@@ -204,9 +208,10 @@ class SystemTab(QWidget):
         if not res:
             return
         xs, iterations = res
-        self.set_result(xs, [fn.f(*xs) for fn in system.equations], iterations)
+        logger.debug(f"solution success, {xs=}, {iterations=}")
+        self.set_result(xs, system.apply(xs), iterations)
         if len(xs) == 2:
-            self.plot_container.canvas.plot_point(*xs)
+            self.plot_container.canvas.plot_point(*[xs[sym] for sym in xs.keys()])
 
     def save_to_file(self):
         if not self.result:

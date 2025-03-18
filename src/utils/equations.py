@@ -1,6 +1,6 @@
 import math
 import re
-from typing import List, Set
+from typing import Dict, List, Set
 
 import sympy as sp  # type: ignore
 
@@ -10,6 +10,8 @@ from utils.math import df as _df
 from utils.math import get_phi_with_lambda
 
 logger = GlobalLogger()
+
+type EquationSystemSolution = Dict[sp.Symbol, float]
 
 
 class Equation:
@@ -153,8 +155,20 @@ class EquationSystem:
                 f"Symbols {self.symbols - expressed_symbols} are not defined in terms of other symbols with phis"
             )
 
+    def apply(self, xs: EquationSystemSolution) -> List[float]:
+        return [e.f(*[xs[sym] for sym in e.f.args[0]]) for e in self.equations]
+
     def get_phi_map(self):
         return {e.phi_lhs: e.phi for e in self.equations}
+
+    def apply_phi(self, xs: EquationSystemSolution) -> EquationSystemSolution:
+        """
+        applies the phi functions
+        """
+        return {
+            phi_lhs: phi(*[xs[sym] for sym in phi.args[0]])
+            for phi_lhs, phi in self.get_phi_map().items()
+        }
 
 
 SYSTEM_PRESETS = [

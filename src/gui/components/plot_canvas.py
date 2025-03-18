@@ -58,3 +58,8 @@ class PlotCanvas(FigureCanvas):
                 Z = fn_np(X, Y)
                 self.ax.contour(X, Y, Z, levels=[0], colors="r")
                 self.draw()
+
+    def plot_point(self, x: float, y: float):
+        logger.debug(f'plotting point ({x}, {y})')
+        self.ax.plot(x, y, marker="o", markersize=5)
+        self.draw()

@@ -201,9 +201,12 @@ class SystemTab(QWidget):
         except ValueError as e:
             show_error_message(str(e))
             return
-        if res:
-            xs, iterations = res
-            self.set_result(xs, [fn.f(*xs) for fn in fn_system], iterations)
+        if not res:
+            return
+        xs, iterations = res
+        self.set_result(xs, [fn.f(*xs) for fn in fn_system], iterations)
+        if len(xs) == 2:
+            self.plot_container.canvas.plot_point(*xs)
 
     def save_to_file(self):
         if not self.result:

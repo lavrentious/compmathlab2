@@ -217,9 +217,11 @@ class SingleTab(QWidget):
             show_error_message("method does not converge")
             return
         res = solver.solve(equation, precision)
-        if res:
-            x, iterations = res
-            self.set_result(equation, x, equation.f(x), iterations)
+        if not res:
+            return
+        x, iterations = res
+        self.set_result(equation, x, equation.f(x), iterations)
+        self.plot_container.canvas.plot_point(x, equation.f(x))
 
     def plot_function(self, fn: Callable[[float], float], l: float, r: float):
         w = r - l

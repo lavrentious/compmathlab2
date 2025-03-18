@@ -183,6 +183,8 @@ class SingleTab(QWidget):
         file_path, _ = QFileDialog.getSaveFileName(
             self, "Open File", "", "All Files (*)"
         )
+        if not file_path:
+            return
         res_writer = ResWriter(open(file_path, "w"))
         res_writer.write(equation, x, y, iterations)
         res_writer.destroy()

@@ -23,7 +23,7 @@ from gui.guiutils import show_error_message
 from logger import GlobalLogger
 from solvers.fixed_point_iteration_system_solver import FixedPointIterationSystemSolver
 from solvers.system_solver import SystemSolver
-from utils.equations import SYSTEM_PRESETS, MultivariableEquation
+from utils.equations import SYSTEM_PRESETS, EquationSystem, MultivariableEquation
 from utils.validation import is_float, to_float
 from utils.writer import ResWriter
 
@@ -36,7 +36,7 @@ class SolutionMethod(Enum):
 
 class SystemTab(QWidget):
     result: Tuple[List[str], List[float], List[float], int] | None = None
-    equations: List[MultivariableEquation] | None = None
+    equation_system: EquationSystem | None = None
     equation_inputs: List[QLineEdit]
     precision_input: QLineEdit
     method_combobox: QComboBox
@@ -122,27 +122,27 @@ class SystemTab(QWidget):
         grid0.setColumnStretch(1, 0)
         self.setLayout(grid0)
 
-        self.set_equations(self.presets_combobox.itemData(0))
+        self.set_system(self.presets_combobox.itemData(0))
 
     def load_preset(self, text: str):
         logger.debug(f"Loading preset '{text}'")
         index = self.presets_combobox.findText(text)
         data = self.presets_combobox.itemData(index)
-        system: List[MultivariableEquation] | None = data
+        system: EquationSystem | None = data
         if system is None:
             logger.warning(f"Preset {text} ({index=}) is None")
             return
 
         logger.debug(f"Preset {text} ({index=}) loaded")
-        self.set_equations(system)
+        self.set_system(system)
 
-    def set_equations(self, equations: List[MultivariableEquation]):
-        self.equations = equations
+    def set_system(self, system: EquationSystem):
+        self.equation_system = system
         for equation_input in self.equation_inputs:
             self.equations_vbox.removeWidget(equation_input)
             equation_input.deleteLater()
         self.equation_inputs.clear()
-        for e in equations:
+        for e in system.equations:
             equation_input = QLineEdit(e.f_str())
             equation_input.setReadOnly(True)
             self.equation_inputs.append(equation_input)
@@ -156,22 +156,22 @@ class SystemTab(QWidget):
 
     def _parse_values(
         self,
-    ) -> Tuple[List[MultivariableEquation], float, SolutionMethod]:
+    ) -> Tuple[EquationSystem | None, float, SolutionMethod]:
         precision = self.precision_input.text()
         if not precision:
             precision = str(EPS)
         if not is_float(precision):
             raise ValueError("Precision is not a float")
         return (
-            self.equations or [],
+            self.equation_system or None,
             to_float(precision),
             SolutionMethod(self.method_combobox.currentText()),
         )
 
     def parse_validate_plot(self):
-        equations, precision, solution_method = self._parse_values()
-        self.plot_container.canvas.plot_system(equations)
-        return equations, precision, solution_method
+        system, precision, solution_method = self._parse_values()
+        self.plot_container.canvas.plot_system(system.equations)
+        return system, precision, solution_method
 
     def manual_plot(self):
         logger.debug("plotting")
@@ -182,7 +182,7 @@ class SystemTab(QWidget):
 
     def solve_equations(self):
         try:
-            fn_system, precision, solution_method = self.parse_validate_plot()
+            system, precision, solution_method = self.parse_validate_plot()
         except ValueError as e:
             show_error_message(str(e))
             return
@@ -193,18 +193,18 @@ class SystemTab(QWidget):
             logger.debug("using fixed point iteration")
             solver = FixedPointIterationSystemSolver()
 
-        if not solver.check_convergence(fn_system):
+        if not solver.check_convergence(system):
             show_error_message("method does not converge")
             return
         try:
-            res = solver.solve(fn_system, precision)
+            res = solver.solve(system, precision)
         except ValueError as e:
             show_error_message(str(e))
             return
         if not res:
             return
         xs, iterations = res
-        self.set_result(xs, [fn.f(*xs) for fn in fn_system], iterations)
+        self.set_result(xs, [fn.f(*xs) for fn in system.equations], iterations)
         if len(xs) == 2:
             self.plot_container.canvas.plot_point(*xs)
 

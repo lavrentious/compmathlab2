@@ -1,6 +1,6 @@
 from typing import List, Tuple
 
-from utils.equations import MultivariableEquation
+from utils.equations import EquationSystem, MultivariableEquation
 
 
 class SystemSolver:
@@ -11,7 +11,7 @@ class SystemSolver:
 
     def solve(
         self,
-        fs: List[MultivariableEquation],
+        system: EquationSystem,
         precision: float,
     ) -> Tuple[List[float], int]:
         """
@@ -19,5 +19,5 @@ class SystemSolver:
         """
         return [], 0
 
-    def check_convergence(self, fs: List[MultivariableEquation]):
+    def check_convergence(self, system: EquationSystem):
         pass

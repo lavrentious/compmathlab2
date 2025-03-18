@@ -1,5 +1,6 @@
 import math
 import re
+from typing import List, Set
 
 import sympy as sp  # type: ignore
 
@@ -137,29 +138,52 @@ class MultivariableEquation:
         return str(self.f.expr)
 
 
+class EquationSystem:
+    equations: List[MultivariableEquation]
+    symbols: Set[sp.Symbol]
+
+    def __init__(self, equations: List[MultivariableEquation]):
+        self.equations = equations
+        self.symbols = set.union(*[e.f.expr.free_symbols for e in equations])
+
+        # symbols that are defined in terms of other symbols with phis
+        expressed_symbols = set.union(*[e.phi_lhs.free_symbols for e in equations])
+        if len(expressed_symbols) != len(self.symbols):
+            raise ValueError(
+                f"Symbols {self.symbols - expressed_symbols} are not defined in terms of other symbols with phis"
+            )
+
+    def get_phi_map(self):
+        return {e.phi_lhs: e.phi for e in self.equations}
+
+
 SYSTEM_PRESETS = [
-    [
-        MultivariableEquation(
-            sp.Lambda(sp.symbols("x1, x2"), "0.1*x1**2 + x1 + 0.2*x2**2 - 0.3"),
-            sp.Symbol("x1"),
-            "0.3 - 0.1*x1**2 - 0.2*x2**2",
-        ),
-        MultivariableEquation(
-            sp.Lambda(sp.symbols("x1, x2"), "0.2*x1**2 + x2 + 0.1*x1*x2 - 0.7"),
-            sp.Symbol("x2"),
-            "0.7 - 0.2*x1**2 - 0.1*x1*x2",
-        ),
-    ],
-    [
-        MultivariableEquation(
-            sp.Lambda(sp.symbols("x, y"), "x**2 + y**2 - 4"),
-            sp.Symbol("x"),
-            "sqrt(4 - y**2)",
-        ),
-        MultivariableEquation(
-            sp.Lambda(sp.symbols("x1, x2"), "-3*x**2 + y"),
-            sp.Symbol("y"),
-            "3*x**2",
-        ),
-    ],
+    EquationSystem(
+        [
+            MultivariableEquation(
+                sp.Lambda(sp.symbols("x1, x2"), "0.1*x1**2 + x1 + 0.2*x2**2 - 0.3"),
+                sp.Symbol("x1"),
+                "0.3 - 0.1*x1**2 - 0.2*x2**2",
+            ),
+            MultivariableEquation(
+                sp.Lambda(sp.symbols("x1, x2"), "0.2*x1**2 + x2 + 0.1*x1*x2 - 0.7"),
+                sp.Symbol("x2"),
+                "0.7 - 0.2*x1**2 - 0.1*x1*x2",
+            ),
+        ]
+    ),
+    EquationSystem(
+        [
+            MultivariableEquation(
+                sp.Lambda(sp.symbols("x, y"), "x**2 + y**2 - 4"),
+                sp.Symbol("x"),
+                "sqrt(4 - y**2)",
+            ),
+            MultivariableEquation(
+                sp.Lambda(sp.symbols("x1, x2"), "-3*x**2 + y"),
+                sp.Symbol("y"),
+                "3*x**2",
+            ),
+        ]
+    ),
 ]

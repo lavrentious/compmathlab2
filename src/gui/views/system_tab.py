@@ -1,7 +1,6 @@
 from enum import Enum
 from typing import List, Tuple
 
-import numpy as np
 from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import (
     QComboBox,
@@ -23,7 +22,6 @@ from gui.components.plot_container import PlotContainer
 from gui.guiutils import show_error_message
 from logger import GlobalLogger
 from solvers.fixed_point_iteration_system_solver import FixedPointIterationSystemSolver
-from solvers.solver import Solver
 from solvers.system_solver import SystemSolver
 from utils.equations import SYSTEM_PRESETS, MultivariableEquation
 from utils.validation import is_float, to_float
@@ -215,7 +213,7 @@ class SystemTab(QWidget):
         file_path, _ = QFileDialog.getSaveFileName(
             self, "Open File", "", "All Files (*)"
         )
-        if file_path == '':
+        if file_path == "":
             return
         res_writer = ResWriter(open(file_path, "w"))
         res_writer.write(equation_str, x, y, iterations)

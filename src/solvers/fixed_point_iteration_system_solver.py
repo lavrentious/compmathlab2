@@ -1,4 +1,4 @@
-from typing import Callable, List, Tuple
+from typing import List, Tuple
 
 from solvers.system_solver import SystemSolver
 from utils.equations import MultivariableEquation

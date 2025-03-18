@@ -29,8 +29,8 @@ from solvers.newton_solver import NewtonSolver
 from solvers.solver import Solver
 from utils.equations import Equation
 from utils.math import check_single_root
-from utils.writer import ResWriter
 from utils.validation import is_float, to_float
+from utils.writer import ResWriter
 
 logger = GlobalLogger()
 

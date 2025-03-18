@@ -1,12 +1,12 @@
 from typing import List
+
+import matplotlib.pyplot as plt
 import numpy as np
 import sympy as sp  # type: ignore
-import matplotlib.pyplot as plt
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 
 from logger import GlobalLogger
 from utils.equations import MultivariableEquation
-
 
 logger = GlobalLogger()
 

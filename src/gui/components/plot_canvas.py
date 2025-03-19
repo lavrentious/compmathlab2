@@ -4,13 +4,13 @@ import matplotlib.pyplot as plt
 import numpy as np
 import sympy as sp  # type: ignore
 from matplotlib.axes import Axes
-from matplotlib.backends.backend_qt5agg import (  # type: ignore
-    FigureCanvasQTAgg as FigureCanvas,
-)
 from matplotlib.figure import Figure
 
 from logger import GlobalLogger
-from utils.equations import MultivariableEquation
+from utils.equations import EquationSystem
+
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas  # type: ignore # isort: skip
+
 
 logger = GlobalLogger()
 
@@ -44,26 +44,31 @@ class PlotCanvas(FigureCanvas):
         self.ax.legend()
         self.draw()
 
-    def plot_system(self, equations: List[MultivariableEquation]) -> None:
+    def plot_system(self, system: EquationSystem) -> None:
+        if len(system.symbols) > 2:
+            return
         self.clear()
         self.ax.grid(True)
         self.ax.axhline(0, color="gray", lw=0.5)
         self.ax.axvline(0, color="gray", lw=0.5)
-        for e in equations:
-            logger.debug(e, e.f.expr, e.f.expr.free_symbols)
-            if len(e.f.expr.free_symbols) == 1:
+        if len(system.symbols) == 1:
+            for e in system.equations:
+                logger.debug(e, e.f.expr, e.f.expr.free_symbols)
                 xs = list(np.linspace(-10, 10, 1000).astype(float))
                 ys = [e.f(x) for x in xs]
                 self.plot_function(xs, ys, "f(x)")
-            elif len(e.f.expr.free_symbols) == 2:
-                x, y = e.f.expr.free_symbols
+        elif len(system.symbols) == 2:
+            x, y = system.symbols
+            for e in system.equations:
                 fn_np = sp.lambdify((x, y), e.f(x, y), "numpy")
                 xs = list(np.linspace(-10, 10, 400).astype(float))
                 ys = list(np.linspace(-10, 10, 400).astype(float))
                 X, Y = np.meshgrid(xs, ys)
                 Z = fn_np(X, Y)
                 self.ax.contour(X, Y, Z, levels=[0], colors="r")
-                self.draw()
+            self.ax.set_xlabel(x.name)
+            self.ax.set_ylabel(y.name)
+            self.draw()
 
     def plot_point(self, x: float, y: float) -> None:
         logger.debug(f"plotting point ({x}, {y})")

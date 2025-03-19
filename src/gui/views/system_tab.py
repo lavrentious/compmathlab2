@@ -182,7 +182,7 @@ class SystemTab(QWidget):
         system, precision, solution_method = self._parse_values()
         if system is None:
             raise ValueError("Equation system could not be parsed")
-        self.plot_container.canvas.plot_system(system.equations)
+        self.plot_container.canvas.plot_system(system)
         return system, precision, solution_method
 
     def manual_plot(self) -> None:

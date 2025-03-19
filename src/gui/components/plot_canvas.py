@@ -4,9 +4,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 import sympy as sp  # type: ignore
 from matplotlib.axes import Axes
-from matplotlib.backends.backend_qt5agg import (
+from matplotlib.backends.backend_qt5agg import (  # type: ignore
     FigureCanvasQTAgg as FigureCanvas,
-)  # type: ignore
+)
 from matplotlib.figure import Figure
 
 from logger import GlobalLogger

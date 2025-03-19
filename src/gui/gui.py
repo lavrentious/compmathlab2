@@ -5,7 +5,7 @@ from gui.views.system_tab import SystemTab
 
 
 class EquationSolverApp(QMainWindow):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
 
         self.setWindowTitle("pupka zalupka v1.0")

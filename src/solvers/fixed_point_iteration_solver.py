@@ -8,10 +8,10 @@ class FixedPointIterationSolver(Solver):
     MAX_ITERATIONS = 100000
     Q = 1  # 0 <= q < 1
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
 
-    def get_starting_point(self, f, l, r):
+    def get_starting_point(self, equation: Equation, l: float, r: float) -> float:
         return (l + r) / 2
 
     def solve(self, equation: Equation, precision: float) -> Tuple[float, int]:
@@ -32,7 +32,7 @@ class FixedPointIterationSolver(Solver):
             prev_x = x
         raise ValueError("no convergence")
 
-    def check_convergence(self, equation: Equation):
+    def check_convergence(self, equation: Equation) -> bool:
         l, r, dphi = (
             equation.interval_l,
             equation.interval_r,

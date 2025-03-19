@@ -17,7 +17,7 @@ class ArgParser:
     help_mode: bool = False  # help mode
     verbose: bool
 
-    def _register_args(self):
+    def _register_args(self) -> None:
         self.parser.add_argument("-h", "--help", action="store_true", help="shows help")
         self.parser.add_argument(
             "-v",
@@ -26,7 +26,7 @@ class ArgParser:
             help="set verbose mode",
         )
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.parser = argparse.ArgumentParser(add_help=False)
         self._register_args()
 
@@ -44,5 +44,5 @@ class ArgParser:
 
         return 0
 
-    def print_help(self):
+    def print_help(self) -> None:
         self.parser.print_help()

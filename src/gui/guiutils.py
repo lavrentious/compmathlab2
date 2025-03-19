@@ -1,9 +1,9 @@
-from PyQt6.QtWidgets import QInputDialog, QMessageBox
+from PyQt6.QtWidgets import QInputDialog, QMessageBox, QWidget
 
 
 def show_error_message(
     message: str, informative_text: str | None = None, window_title: str = "Error"
-):
+) -> None:
     msg = QMessageBox()
     msg.setIcon(QMessageBox.Icon.Critical)
     msg.setWindowTitle(window_title)
@@ -14,7 +14,8 @@ def show_error_message(
     msg.exec()
 
 
-def open_input_dialog(parent, title: str, message: str):
+def open_input_dialog(parent: QWidget, title: str, message: str) -> str | None:
     text, ok = QInputDialog.getText(parent, title, message)
     if ok:
         return text
+    return None

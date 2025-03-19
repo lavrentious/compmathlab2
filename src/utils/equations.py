@@ -11,7 +11,7 @@ from utils.math import get_phi_with_lambda
 
 logger = GlobalLogger()
 
-type EquationSystemSolution = Dict[sp.Symbol, float]
+EquationSystemSolution = dict[sp.Symbol, float]
 
 
 class Equation:
@@ -73,16 +73,16 @@ class Equation:
         self.interval_l = interval_l
         self.interval_r = interval_r
 
-    def f_str(self):
+    def f_str(self) -> str:
         return str(self.f.expr)
 
-    def phi_str(self):
+    def phi_str(self) -> str:
         return str(self.phi.expr)
 
-    def df_str(self):
+    def df_str(self) -> str:
         return str(self.df.expr)
 
-    def dphi_str(self):
+    def dphi_str(self) -> str:
         return str(self.dphi.expr)
 
     def _validate_and_parse_equation(self, equation_str: str) -> sp.Lambda:
@@ -136,7 +136,7 @@ class MultivariableEquation:
         self.df = sp.Lambda(self.phi_lhs, sp.diff(self.f.expr, self.phi_lhs))
         self.dphi = sp.Lambda(self.phi_lhs, sp.diff(self.phi.expr, self.phi_lhs))
 
-    def f_str(self):
+    def f_str(self) -> str:
         return str(self.f.expr)
 
 
@@ -158,7 +158,7 @@ class EquationSystem:
     def apply(self, xs: EquationSystemSolution) -> List[float]:
         return [e.f(*[xs[sym] for sym in e.f.args[0]]) for e in self.equations]
 
-    def get_phi_map(self):
+    def get_phi_map(self) -> Dict[sp.Symbol, sp.Lambda]:
         return {e.phi_lhs: e.phi for e in self.equations}
 
     def apply_phi(self, xs: EquationSystemSolution) -> EquationSystemSolution:

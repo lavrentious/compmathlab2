@@ -49,7 +49,7 @@ class SystemTab(QWidget):
     plot_container: PlotContainer
     equations_vbox: QVBoxLayout
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         grid0 = QGridLayout()
 
@@ -93,18 +93,22 @@ class SystemTab(QWidget):
         font.setFamily("Courier New")
         self.result_table.setFont(font)
         self.result_table.setVerticalHeaderLabels(["x", "f(x)", "iterations"])
-        self.result_table.horizontalHeader().setVisible(False)
+        result_table_horizontal_header = self.result_table.horizontalHeader()
+        if result_table_horizontal_header is not None:
+            result_table_horizontal_header.setVisible(False)
+            result_table_horizontal_header.setSectionResizeMode(
+                QHeaderView.ResizeMode.Stretch
+            )
+        result_table_vertical_header = self.result_table.verticalHeader()
+        if result_table_vertical_header is not None:
+            result_table_vertical_header.setSectionResizeMode(
+                QHeaderView.ResizeMode.Stretch
+            )
         self.result_table.setHorizontalScrollBarPolicy(
             Qt.ScrollBarPolicy.ScrollBarAlwaysOff
         )
         self.result_table.setVerticalScrollBarPolicy(
             Qt.ScrollBarPolicy.ScrollBarAlwaysOff
-        )
-        self.result_table.verticalHeader().setSectionResizeMode(
-            QHeaderView.ResizeMode.Stretch
-        )
-        self.result_table.horizontalHeader().setSectionResizeMode(
-            QHeaderView.ResizeMode.Stretch
         )
         self.result_table.setSizePolicy(
             QSizePolicy.Policy.MinimumExpanding, QSizePolicy.Policy.Fixed
@@ -126,7 +130,7 @@ class SystemTab(QWidget):
 
         self.set_system(self.presets_combobox.itemData(0))
 
-    def load_preset(self, text: str):
+    def load_preset(self, text: str) -> None:
         logger.debug(f"Loading preset '{text}'")
         index = self.presets_combobox.findText(text)
         data = self.presets_combobox.itemData(index)
@@ -138,7 +142,7 @@ class SystemTab(QWidget):
         logger.debug(f"Preset {text} ({index=}) loaded")
         self.set_system(system)
 
-    def set_system(self, system: EquationSystem):
+    def set_system(self, system: EquationSystem) -> None:
         self.equation_system = system
         for equation_input in self.equation_inputs:
             self.equations_vbox.removeWidget(equation_input)
@@ -150,7 +154,9 @@ class SystemTab(QWidget):
             self.equation_inputs.append(equation_input)
             self.equations_vbox.addWidget(equation_input)
 
-    def set_result(self, xs: EquationSystemSolution, ys: List[float], iterations: int):
+    def set_result(
+        self, xs: EquationSystemSolution, ys: List[float], iterations: int
+    ) -> None:
         if self.equation_system is None:
             return
         self.result = (self.equation_system, xs, ys, iterations)
@@ -172,19 +178,21 @@ class SystemTab(QWidget):
             SolutionMethod(self.method_combobox.currentText()),
         )
 
-    def parse_validate_plot(self):
+    def parse_validate_plot(self) -> Tuple[EquationSystem, float, SolutionMethod]:
         system, precision, solution_method = self._parse_values()
+        if system is None:
+            raise ValueError("Equation system could not be parsed")
         self.plot_container.canvas.plot_system(system.equations)
         return system, precision, solution_method
 
-    def manual_plot(self):
+    def manual_plot(self) -> None:
         logger.debug("plotting")
         try:
             self.parse_validate_plot()
         except ValueError as e:
             show_error_message(str(e))
 
-    def solve_equations(self):
+    def solve_equations(self) -> None:
         try:
             system, precision, solution_method = self.parse_validate_plot()
         except ValueError as e:
@@ -213,7 +221,7 @@ class SystemTab(QWidget):
         if len(xs) == 2:
             self.plot_container.canvas.plot_point(*[xs[sym] for sym in xs.keys()])
 
-    def save_to_file(self):
+    def save_to_file(self) -> None:
         if not self.result:
             show_error_message("эээ баклан")
             return
@@ -224,5 +232,6 @@ class SystemTab(QWidget):
         if file_path == "":
             return
         res_writer = ResWriter(open(file_path, "w"))
-        res_writer.write(equation_str, x, y, iterations)
+        # TODO
+        # res_writer.write(equation_str, x, y, iterations)
         res_writer.destroy()

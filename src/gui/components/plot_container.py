@@ -1,6 +1,7 @@
 from typing import Callable
 
-from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT
+# bug, import works
+from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT  # type: ignore
 from PyQt6.QtWidgets import QVBoxLayout, QWidget
 
 from gui.components.plot_canvas import PlotCanvas
@@ -15,7 +16,7 @@ class PlotContainer(QWidget):
     interval_r: float
     fn: Callable[[float], float]
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.canvas = PlotCanvas()
         self.toolbar = NavigationToolbar2QT(self.canvas, self)
@@ -29,7 +30,7 @@ class PlotContainer(QWidget):
 
     def set_fn(
         self, fn: Callable[[float], float], interval_l: float, interval_r: float
-    ):
+    ) -> None:
         self.fn = fn
         self.interval_l = interval_l
         self.interval_r = interval_r

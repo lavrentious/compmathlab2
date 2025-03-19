@@ -8,7 +8,7 @@ from utils.equations import EquationSystem, EquationSystemSolution
 class SystemSolver:
     SAMPLES_COUNT = 1000
 
-    def __init__(self):
+    def __init__(self) -> None:
         pass
 
     def solve(
@@ -21,5 +21,5 @@ class SystemSolver:
         """
         return {}, 0
 
-    def check_convergence(self, system: EquationSystem):
-        pass
+    def check_convergence(self, system: EquationSystem) -> bool:
+        return True

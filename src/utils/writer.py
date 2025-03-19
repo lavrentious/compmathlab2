@@ -17,7 +17,7 @@ class ResWriter:
     def __init__(self, out_stream: TextIOWrapper | Any = sys.stdout):
         self.out_stream = out_stream
 
-    def write(self, equation: Equation, x: float, y: float, iterations: int):
+    def write(self, equation: Equation, x: float, y: float, iterations: int) -> None:
         self.out_stream.write(f"Equation: {equation.f_str()} = 0\n")
         self.out_stream.write(f"phi(x) = {equation.dphi_str()}\n")
         self.out_stream.write(f"f'(x) = {equation.df_str()}\n")
@@ -30,5 +30,5 @@ class ResWriter:
         self.out_stream.write(f"Iterations: {iterations}\n")
         self.out_stream.flush()
 
-    def destroy(self):
+    def destroy(self) -> None:
         self.out_stream.close()

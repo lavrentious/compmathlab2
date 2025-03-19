@@ -6,7 +6,7 @@ from utils.equations import Equation
 class Solver:
     SAMPLES_COUNT = 1000
 
-    def __init__(self):
+    def __init__(self) -> None:
         pass
 
     def solve(

@@ -54,7 +54,7 @@ class SingleTab(QWidget):
     plot_container: PlotContainer
     save_to_file_button: QPushButton
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
 
         grid0 = QGridLayout()
@@ -96,19 +96,23 @@ class SingleTab(QWidget):
         font.setFamily("Courier New")
         self.result_table.setFont(font)
         self.result_table.setVerticalHeaderLabels(["x", "f(x)", "iterations"])
-        self.result_table.horizontalHeader().setVisible(False)
+        result_table_horizontal_header = self.result_table.horizontalHeader()
+        if result_table_horizontal_header is not None:
+            result_table_horizontal_header.setVisible(False)
+            result_table_horizontal_header.setSectionResizeMode(
+                QHeaderView.ResizeMode.Stretch
+            )
         self.result_table.setHorizontalScrollBarPolicy(
             Qt.ScrollBarPolicy.ScrollBarAlwaysOff
         )
         self.result_table.setVerticalScrollBarPolicy(
             Qt.ScrollBarPolicy.ScrollBarAlwaysOff
         )
-        self.result_table.verticalHeader().setSectionResizeMode(
-            QHeaderView.ResizeMode.Stretch
-        )
-        self.result_table.horizontalHeader().setSectionResizeMode(
-            QHeaderView.ResizeMode.Stretch
-        )
+        result_table_vertical_header = self.result_table.verticalHeader()
+        if result_table_vertical_header is not None:
+            result_table_vertical_header.setSectionResizeMode(
+                QHeaderView.ResizeMode.Stretch
+            )
         self.result_table.setSizePolicy(
             QSizePolicy.Policy.MinimumExpanding, QSizePolicy.Policy.Fixed
         )
@@ -128,7 +132,9 @@ class SingleTab(QWidget):
         grid0.setColumnStretch(1, 0)
         self.setLayout(grid0)
 
-    def set_result(self, equation: Equation, x: float, y: float, iterations: int):
+    def set_result(
+        self, equation: Equation, x: float, y: float, iterations: int
+    ) -> None:
         self.result = (equation, x, y, iterations)
         self.result_table.setItem(0, 0, QTableWidgetItem(str(x)))
         self.result_table.setItem(1, 0, QTableWidgetItem(str(y)))
@@ -169,13 +175,13 @@ class SingleTab(QWidget):
         self.plot_function(equation.f, equation.interval_l, equation.interval_r)
         return equation, precision, solution_method
 
-    def manual_plot(self):
+    def manual_plot(self) -> None:
         try:
             self.parse_validate_plot()
         except ValueError as e:
             show_error_message(str(e))
 
-    def save_to_file(self):
+    def save_to_file(self) -> None:
         if not self.result:
             show_error_message("эээ баклан")
             return
@@ -189,7 +195,7 @@ class SingleTab(QWidget):
         res_writer.write(equation, x, y, iterations)
         res_writer.destroy()
 
-    def solve_equation(self):
+    def solve_equation(self) -> None:
         try:
             equation, precision, solution_method = self.parse_validate_plot()
         except ValueError as e:
@@ -223,7 +229,7 @@ class SingleTab(QWidget):
         self.set_result(equation, x, equation.f(x), iterations)
         self.plot_container.canvas.plot_point(x, equation.f(x))
 
-    def plot_function(self, fn: Callable[[float], float], l: float, r: float):
+    def plot_function(self, fn: Callable[[float], float], l: float, r: float) -> None:
         w = r - l
         xs = np.linspace(l - w * 0.1, r + w * 0.1, 1000)
         ys = [fn(x) for x in xs]

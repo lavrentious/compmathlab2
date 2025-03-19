@@ -1,7 +1,7 @@
 from typing import Any
 
 
-def is_float(s: Any):
+def is_float(s: Any) -> bool:
     if type(s) == float:
         return True
     if type(s) == str:
@@ -13,7 +13,7 @@ def is_float(s: Any):
         return False
 
 
-def is_int(s: Any):
+def is_int(s: Any) -> bool:
     try:
         int(s)
         return True
@@ -21,7 +21,7 @@ def is_int(s: Any):
         return False
 
 
-def to_float(s: Any):
+def to_float(s: Any) -> float:
     if type(s) == float:
         return s
     if type(s) == str:

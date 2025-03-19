@@ -16,7 +16,7 @@ def d2f(f: Callable[[float], float], x: float) -> float:
     return (f(x + H) - 2 * f(x) + f(x - H)) / H**2
 
 
-def keeps_sign(f: Callable[[float], float], l: float, r: float):
+def keeps_sign(f: Callable[[float], float], l: float, r: float) -> bool:
     d = (r - l) / SAMPLES_COUNT
     x = l
     while x <= r:
@@ -26,11 +26,11 @@ def keeps_sign(f: Callable[[float], float], l: float, r: float):
     return True
 
 
-def signs_equal(a, b):
+def signs_equal(a: int | float, b: int | float) -> bool:
     return (a > 0 and b > 0) or (a < 0 and b < 0)
 
 
-def max_in_interval(f: Callable[[float], float], l: float, r: float):
+def max_in_interval(f: Callable[[float], float], l: float, r: float) -> float:
     d = (r - l) / SAMPLES_COUNT
     x = l
     max_val = f(l)
@@ -41,7 +41,7 @@ def max_in_interval(f: Callable[[float], float], l: float, r: float):
     return max_val
 
 
-def min_in_interval(f: Callable[[float], float], l: float, r: float):
+def min_in_interval(f: Callable[[float], float], l: float, r: float) -> float:
     d = (r - l) / SAMPLES_COUNT
     x = l
     min_val = f(l)
@@ -52,7 +52,7 @@ def min_in_interval(f: Callable[[float], float], l: float, r: float):
     return min_val
 
 
-def check_single_root(f: Callable[[float], float], l: float, r: float):
+def check_single_root(f: Callable[[float], float], l: float, r: float) -> bool:
     _df = lambda x: df(f, x)
 
     if signs_equal(f(l), f(r)):

@@ -3,7 +3,11 @@ from typing import List
 import matplotlib.pyplot as plt
 import numpy as np
 import sympy as sp  # type: ignore
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.axes import Axes
+from matplotlib.backends.backend_qt5agg import (
+    FigureCanvasQTAgg as FigureCanvas,
+)  # type: ignore
+from matplotlib.figure import Figure
 
 from logger import GlobalLogger
 from utils.equations import MultivariableEquation
@@ -12,18 +16,20 @@ logger = GlobalLogger()
 
 
 class PlotCanvas(FigureCanvas):
-    figure: plt.Figure
-    ax: plt.Axes
+    figure: Figure
+    ax: Axes
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.figure, self.ax = plt.subplots()
         super().__init__(self.figure)
         self.ax.autoscale(False)
 
-    def clear(self):
+    def clear(self) -> None:
         self.ax.clear()
 
-    def plot_function(self, x_vals: List[float], y_vals: List[float], label: str):
+    def plot_function(
+        self, x_vals: List[float], y_vals: List[float], label: str
+    ) -> None:
         self.ax.plot(x_vals, y_vals, label=label)
         self.ax.axhline(0, color="gray", lw=0.5)
         self.ax.axvline(0, color="gray", lw=0.5)
@@ -31,14 +37,14 @@ class PlotCanvas(FigureCanvas):
         self.ax.legend()
         self.draw()
 
-    def highlight_x_interval(self, l: float, r: float):
+    def highlight_x_interval(self, l: float, r: float) -> None:
         self.ax.axvspan(
             l, r, facecolor="yellow", alpha=0.5, label="selected x interval"
         )
         self.ax.legend()
         self.draw()
 
-    def plot_system(self, equations: List[MultivariableEquation]):
+    def plot_system(self, equations: List[MultivariableEquation]) -> None:
         self.clear()
         self.ax.grid(True)
         self.ax.axhline(0, color="gray", lw=0.5)
@@ -59,7 +65,7 @@ class PlotCanvas(FigureCanvas):
                 self.ax.contour(X, Y, Z, levels=[0], colors="r")
                 self.draw()
 
-    def plot_point(self, x: float, y: float):
-        logger.debug(f'plotting point ({x}, {y})')
+    def plot_point(self, x: float, y: float) -> None:
+        logger.debug(f"plotting point ({x}, {y})")
         self.ax.plot(x, y, marker="o", markersize=5)
         self.draw()

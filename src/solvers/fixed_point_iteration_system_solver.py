@@ -1,9 +1,8 @@
 from typing import Tuple
 
 from logger import GlobalLogger
-from solvers.system_solver import EquationSystemSolution, SystemSolver
-from utils.equations import EquationSystem
-
+from solvers.system_solver import SystemSolver
+from utils.equations import EquationSystem, EquationSystemSolution
 
 logger = GlobalLogger()
 
@@ -11,7 +10,7 @@ logger = GlobalLogger()
 class FixedPointIterationSystemSolver(SystemSolver):
     MAX_ITERATIONS = 100
 
-    def __init__(self):
+    def __init__(self) -> None:
         pass
 
     def get_starting_points(self, system: EquationSystem) -> EquationSystemSolution:
@@ -33,6 +32,6 @@ class FixedPointIterationSystemSolver(SystemSolver):
             prev_xs = xs.copy()
         raise ValueError("no convergence")
 
-    def check_convergence(self, system: EquationSystem):
+    def check_convergence(self, system: EquationSystem) -> bool:
         # TODO
         return True

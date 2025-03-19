@@ -19,11 +19,15 @@ class Logger:
     file: None | TextIOWrapper | Any
     min_level = LogLevel.INFO
 
-    def __init__(self, file=None, min_level=LogLevel.INFO):
+    def __init__(
+        self,
+        file: None | TextIOWrapper | Any = None,
+        min_level: LogLevel = LogLevel.INFO,
+    ) -> None:
         self.file = file
         self.min_level = min_level
 
-    def set_min_level(self, min_level: LogLevel):
+    def set_min_level(self, min_level: LogLevel) -> None:
         self.min_level = min_level
 
     def log(
@@ -53,10 +57,10 @@ class Logger:
         self.log(*args, level=LogLevel.CRITICAL, sep=sep, end=end)
 
 
-def singleton(class_):
+def singleton(class_: Any) -> Any:
     instances = {}
 
-    def getinstance(*args, **kwargs):
+    def getinstance(*args: Any, **kwargs: Any) -> Any:
         if class_ not in instances:
             instances[class_] = class_(*args, **kwargs)
         return instances[class_]

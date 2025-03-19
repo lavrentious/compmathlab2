@@ -7,7 +7,7 @@ from utils.math import keeps_sign
 
 
 class NewtonSolver(Solver):
-    def check_convergence(self, equation: Equation):
+    def check_convergence(self, equation: Equation) -> bool:
         df, l, r = equation.df, equation.interval_l, equation.interval_r
         d2f = lambda x: _d2f(df, x)
 
@@ -20,7 +20,7 @@ class NewtonSolver(Solver):
 
         return True
 
-    def get_starting_point(self, f, l, r):
+    def get_starting_point(self, equation: Equation, l: float, r: float) -> float:
         return l
 
     def solve(self, equation: Equation, precision: float) -> Tuple[float, int]:
@@ -30,7 +30,7 @@ class NewtonSolver(Solver):
             equation.f,
             equation.df,
         )
-        x = self.get_starting_point(f, interval_l, interval_r)
+        x = self.get_starting_point(equation, interval_l, interval_r)
         prev_x = x - 10 * precision
         iterations = 0
         while True:

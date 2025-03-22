@@ -131,7 +131,7 @@ class MultivariableEquation:
 
     def __init__(self, f: sp.Lambda, phi_lhs: sp.Symbol, phi: sp.Expr):
         self.f = f
-        self.phi = sp.Lambda(f.expr.free_symbols, phi)
+        self.phi = sp.Lambda(tuple(f.expr.free_symbols), phi)
         self.phi_lhs = phi_lhs
         self.df = sp.Lambda(self.phi_lhs, sp.diff(self.f.expr, self.phi_lhs))
         self.dphi = sp.Lambda(self.phi_lhs, sp.diff(self.phi.expr, self.phi_lhs))

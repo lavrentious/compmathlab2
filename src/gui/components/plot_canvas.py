@@ -1,11 +1,11 @@
 from typing import Dict, List
 
-from matplotlib.lines import Line2D
 import matplotlib.pyplot as plt
 import numpy as np
 import sympy as sp  # type: ignore
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
+from matplotlib.lines import Line2D
 
 from logger import GlobalLogger
 from utils.equations import EquationSystem

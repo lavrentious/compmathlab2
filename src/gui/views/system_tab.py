@@ -243,7 +243,7 @@ class SystemTab(QWidget):
         try:
             starting_xs = self._parse_validate_starting_xs()
             self.plot_container.canvas.plot_point_multi(starting_xs)
-        except ValueError as e:
+        except ValueError:
             pass
 
     def solve_equations(self) -> None:

@@ -1,4 +1,4 @@
-from typing import List
+from typing import Dict, List
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -18,6 +18,9 @@ logger = GlobalLogger()
 class PlotCanvas(FigureCanvas):
     figure: Figure
     ax: Axes
+
+    x_axis_symbol: str
+    y_axis_symbol: str
 
     def __init__(self) -> None:
         self.figure, self.ax = plt.subplots()
@@ -68,9 +71,20 @@ class PlotCanvas(FigureCanvas):
                 self.ax.contour(X, Y, Z, levels=[0], colors="r")
             self.ax.set_xlabel(x.name)
             self.ax.set_ylabel(y.name)
+            self.x_axis_symbol = x.name
+            self.y_axis_symbol = y.name
             self.draw()
 
     def plot_point(self, x: float, y: float) -> None:
         logger.debug(f"plotting point ({x}, {y})")
         self.ax.plot(x, y, marker="o", markersize=5)
+        self.draw()
+
+    def plot_point_multi(self, point: Dict[str, float]) -> None:
+        logger.debug(f"plotting point {point}")
+        if len(point) != 2 or set(point.keys()) != set(
+            [self.x_axis_symbol, self.y_axis_symbol]
+        ):
+            return
+        self.plot_point(point[self.x_axis_symbol], point[self.y_axis_symbol])
         self.draw()

@@ -1,4 +1,6 @@
-from typing import Tuple
+from typing import Dict, Tuple
+
+import sympy as sp  # type: ignore
 
 from logger import GlobalLogger
 from solvers.system_solver import SystemSolver
@@ -13,15 +15,24 @@ class FixedPointIterationSystemSolver(SystemSolver):
     def __init__(self) -> None:
         pass
 
-    def get_starting_points(self, system: EquationSystem) -> EquationSystemSolution:
-        return {k: 1 for k in system.symbols}
+    def _starting_points_to_symbols(
+        self, system: EquationSystem, starting_points: Dict[str, float]
+    ) -> Dict[sp.Symbol, float]:
+        system_symbols_strs = [s.name for s in system.symbols]
+        if set(starting_points.keys()) != set(system_symbols_strs):
+            raise ValueError("starting points do not match equation system symbols")
+        return {sp.Symbol(k): v for k, v in starting_points.items()}
 
     def solve(
         self,
         system: EquationSystem,
+        starting_points: Dict[str, float],
         precision: float,
     ) -> Tuple[EquationSystemSolution, int]:
-        xs = self.get_starting_points(system)
+        logger.debug(
+            f"fixed point iteration: {system=} ; {precision=} ; {starting_points=}"
+        )
+        xs = self._starting_points_to_symbols(system, starting_points)
         prev_xs = {k: v - 10 * precision for k, v in xs.items()}
         iterations = 0
         for _ in range(self.MAX_ITERATIONS):
@@ -32,6 +43,8 @@ class FixedPointIterationSystemSolver(SystemSolver):
             prev_xs = xs.copy()
         raise ValueError("no convergence")
 
-    def check_convergence(self, system: EquationSystem) -> bool:
+    def check_convergence(
+        self, system: EquationSystem, starting_points: Dict[str, float]
+    ) -> bool:
         # TODO
         return True

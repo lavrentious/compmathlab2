@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import List, Tuple
+from typing import Dict, List, Tuple
 
 from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import (
@@ -40,6 +40,8 @@ class SystemTab(QWidget):
     )
     equation_system: EquationSystem | None = None
     equation_inputs: List[QLineEdit]
+    starting_points_inputs: Dict[str, QLineEdit]
+    starting_points_vbox: QVBoxLayout
     precision_input: QLineEdit
     method_combobox: QComboBox
     presets_combobox: QComboBox
@@ -55,6 +57,7 @@ class SystemTab(QWidget):
 
         vbox0 = QVBoxLayout()
         self.equation_inputs = []
+        self.starting_points_inputs = {}
 
         self.presets_combobox = QComboBox()
         for i, preset in enumerate(SYSTEM_PRESETS):
@@ -66,6 +69,11 @@ class SystemTab(QWidget):
         self.equations_vbox = QVBoxLayout()
         self.equations_vbox.setAlignment(Qt.AlignmentFlag.AlignTop)
         vbox0.addLayout(self.equations_vbox)
+
+        vbox0.addWidget(QLabel("Starting points:"))
+        self.starting_points_vbox = QVBoxLayout()
+        self.starting_points_vbox.setAlignment(Qt.AlignmentFlag.AlignTop)
+        vbox0.addLayout(self.starting_points_vbox)
 
         self.plot_button = QPushButton("Plot")
         self.plot_button.clicked.connect(self.manual_plot)
@@ -147,12 +155,23 @@ class SystemTab(QWidget):
         for equation_input in self.equation_inputs:
             self.equations_vbox.removeWidget(equation_input)
             equation_input.deleteLater()
+        for [symbol, starting_point_input] in self.starting_points_inputs.items():
+            self.starting_points_vbox.removeWidget(starting_point_input)
+            starting_point_input.deleteLater()
+
         self.equation_inputs.clear()
+        self.starting_points_inputs.clear()
         for e in system.equations:
             equation_input = QLineEdit(e.f_str())
             equation_input.setReadOnly(True)
             self.equation_inputs.append(equation_input)
             self.equations_vbox.addWidget(equation_input)
+
+        for symbol in sorted(system.symbols, key=str):
+            starting_point_input = QLineEdit()
+            starting_point_input.setPlaceholderText(f"{symbol}=")
+            self.starting_points_inputs[str(symbol)] = starting_point_input
+            self.starting_points_vbox.addWidget(starting_point_input)
 
     def set_result(
         self, xs: EquationSystemSolution, ys: List[float], iterations: int
@@ -166,24 +185,37 @@ class SystemTab(QWidget):
 
     def _parse_values(
         self,
-    ) -> Tuple[EquationSystem | None, float, SolutionMethod]:
+    ) -> Tuple[EquationSystem | None, float, SolutionMethod, Dict[str, float]]:
         precision = self.precision_input.text()
         if not precision:
             precision = str(EPS)
         if not is_float(precision):
             raise ValueError("Precision is not a float")
+
+        for symbol, starting_point_input in self.starting_points_inputs.items():
+            if not starting_point_input.text():
+                raise ValueError(f"Starting point for {symbol} is empty")
+            if not is_float(starting_point_input.text()):
+                raise ValueError(f"Starting point for {symbol} is not a float")
         return (
             self.equation_system or None,
             to_float(precision),
             SolutionMethod(self.method_combobox.currentText()),
+            {
+                symbol: to_float(starting_point_input.text())
+                for symbol, starting_point_input in self.starting_points_inputs.items()
+            },
         )
 
-    def parse_validate_plot(self) -> Tuple[EquationSystem, float, SolutionMethod]:
-        system, precision, solution_method = self._parse_values()
+    def parse_validate_plot(
+        self,
+    ) -> Tuple[EquationSystem, float, SolutionMethod, Dict[str, float]]:
+        system, precision, solution_method, starting_points = self._parse_values()
         if system is None:
             raise ValueError("Equation system could not be parsed")
         self.plot_container.canvas.plot_system(system)
-        return system, precision, solution_method
+        self.plot_container.canvas.plot_point_multi(starting_points)
+        return system, precision, solution_method, starting_points
 
     def manual_plot(self) -> None:
         logger.debug("plotting")
@@ -194,7 +226,9 @@ class SystemTab(QWidget):
 
     def solve_equations(self) -> None:
         try:
-            system, precision, solution_method = self.parse_validate_plot()
+            system, precision, solution_method, starting_points = (
+                self.parse_validate_plot()
+            )
         except ValueError as e:
             show_error_message(str(e))
             return
@@ -205,11 +239,11 @@ class SystemTab(QWidget):
             logger.debug("using fixed point iteration")
             solver = FixedPointIterationSystemSolver()
 
-        if not solver.check_convergence(system):
+        if not solver.check_convergence(system, starting_points):
             show_error_message("method does not converge")
             return
         try:
-            res = solver.solve(system, precision)
+            res = solver.solve(system, starting_points, precision)
         except ValueError as e:
             show_error_message(str(e))
             return

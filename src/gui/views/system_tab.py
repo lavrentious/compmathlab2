@@ -188,34 +188,42 @@ class SystemTab(QWidget):
         self.result_table.setItem(0, 1, QTableWidgetItem(str(ys)))
         self.result_table.setItem(0, 2, QTableWidgetItem(str(iterations)))
 
-    def _parse_values(
+    def _parse_validate_system(self) -> EquationSystem | None:
+        return self.equation_system
+
+    def _parse_validate_starting_xs(self) -> Dict[str, float]:
+        for symbol, starting_point_input in self.starting_xs_inputs.items():
+            if not starting_point_input.text():
+                raise ValueError(f"Starting point for {symbol} is empty")
+            if not is_float(starting_point_input.text()):
+                raise ValueError(f"Starting point for {symbol} is not a float")
+        return {
+            symbol: to_float(starting_point_input.text())
+            for symbol, starting_point_input in self.starting_xs_inputs.items()
+        }
+
+    def _parse_validate_values(
         self,
     ) -> Tuple[EquationSystem | None, float, SolutionMethod, Dict[str, float]]:
+        system = self._parse_validate_system()
+        starting_xs = self._parse_validate_starting_xs()
         precision = self.precision_input.text()
         if not precision:
             precision = str(EPS)
         if not is_float(precision):
             raise ValueError("Precision is not a float")
 
-        for symbol, starting_point_input in self.starting_xs_inputs.items():
-            if not starting_point_input.text():
-                raise ValueError(f"Starting point for {symbol} is empty")
-            if not is_float(starting_point_input.text()):
-                raise ValueError(f"Starting point for {symbol} is not a float")
         return (
-            self.equation_system or None,
+            system,
             to_float(precision),
             SolutionMethod(self.method_combobox.currentText()),
-            {
-                symbol: to_float(starting_point_input.text())
-                for symbol, starting_point_input in self.starting_xs_inputs.items()
-            },
+            starting_xs,
         )
 
     def parse_validate_plot(
         self,
     ) -> Tuple[EquationSystem, float, SolutionMethod, Dict[str, float]]:
-        system, precision, solution_method, starting_xs = self._parse_values()
+        system, precision, solution_method, starting_xs = self._parse_validate_values()
         if system is None:
             raise ValueError("Equation system could not be parsed")
         self.plot_container.canvas.plot_system(system)
@@ -225,15 +233,22 @@ class SystemTab(QWidget):
     def manual_plot(self) -> None:
         logger.debug("plotting")
         try:
-            self.parse_validate_plot()
+            system = self._parse_validate_system()
+            if system is None:
+                raise ValueError("Equation system could not be parsed")
+            self.plot_container.canvas.plot_system(system)
         except ValueError as e:
             show_error_message(str(e))
 
+        try:
+            starting_xs = self._parse_validate_starting_xs()
+            self.plot_container.canvas.plot_point_multi(starting_xs)
+        except ValueError as e:
+            pass
+
     def solve_equations(self) -> None:
         try:
-            system, precision, solution_method, starting_xs = (
-                self.parse_validate_plot()
-            )
+            system, precision, solution_method, starting_xs = self.parse_validate_plot()
         except ValueError as e:
             show_error_message(str(e))
             return

@@ -46,5 +46,8 @@ class FixedPointIterationSystemSolver(SystemSolver):
     def check_convergence(
         self, system: EquationSystem, starting_points: Dict[str, float]
     ) -> bool:
-        # TODO
+        for e in system.equations:
+            s = sum(abs(e.dphi(symbol, starting_points)) for symbol in system.symbols)
+            if s >= 1:
+                return False
         return True

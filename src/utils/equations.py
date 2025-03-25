@@ -120,24 +120,35 @@ class Equation:
 class MultivariableEquation:
     # f(x1, ..., xn) = 0
     f: sp.Lambda
-    df: sp.Lambda
-    d2f: sp.Lambda
 
     # phi_lhs = phi(x1 , ..., xn)
     # e.g. phi_lhs = x3
     phi_lhs: sp.Symbol
     phi: sp.Lambda
-    dphi: sp.Lambda
 
     def __init__(self, f: sp.Lambda, phi_lhs: sp.Symbol, phi: sp.Expr):
         self.f = f
         self.phi = sp.Lambda(tuple(f.expr.free_symbols), phi)
         self.phi_lhs = phi_lhs
-        self.df = sp.Lambda(self.phi_lhs, sp.diff(self.f.expr, self.phi_lhs))
-        self.dphi = sp.Lambda(self.phi_lhs, sp.diff(self.phi.expr, self.phi_lhs))
+
+    def compute(self, xs: Dict[sp.Symbol, float]) -> sp.Float:
+        return self.f(*[xs[sym] for sym in self.f.args[0]])
+
+    def df(self, symbol: sp.Symbol, xs: Dict[sp.Symbol, float]) -> sp.Float:
+        logger.debug(f"computing df {self.f_str()} {sp.diff(self.f.expr, symbol)}")
+        return sp.diff(self.f.expr, symbol).subs(xs.items())
+
+    def dphi(self, symbol: sp.Symbol, xs: Dict[sp.Symbol, float]) -> sp.Float:
+        logger.debug(
+            f"computing dphi {self.phi_str()} {sp.diff(self.phi.expr, symbol)}"
+        )
+        return sp.diff(self.phi.expr, symbol).subs(xs.items())
 
     def f_str(self) -> str:
         return str(self.f.expr)
+
+    def phi_str(self) -> str:
+        return str(self.phi.expr)
 
 
 class EquationSystem:
@@ -156,7 +167,7 @@ class EquationSystem:
             )
 
     def apply(self, xs: EquationSystemSolution) -> List[float]:
-        return [e.f(*[xs[sym] for sym in e.f.args[0]]) for e in self.equations]
+        return [e.compute(xs) for e in self.equations]
 
     def get_phi_map(self) -> Dict[sp.Symbol, sp.Lambda]:
         return {e.phi_lhs: e.phi for e in self.equations}

@@ -1,5 +1,6 @@
 from typing import Dict, List
 
+from matplotlib.lines import Line2D
 import matplotlib.pyplot as plt
 import numpy as np
 import sympy as sp  # type: ignore
@@ -21,6 +22,10 @@ class PlotCanvas(FigureCanvas):
 
     x_axis_symbol: str
     y_axis_symbol: str
+
+    line: Line2D | None = None
+    x_data: List[float] = []
+    y_data: List[float] = []
 
     def __init__(self) -> None:
         self.figure, self.ax = plt.subplots()
@@ -87,4 +92,26 @@ class PlotCanvas(FigureCanvas):
         ):
             return
         self.plot_point(point[self.x_axis_symbol], point[self.y_axis_symbol])
+
+    def start_polygon_chain(self) -> None:
+        (self.line,) = self.ax.plot([], [], marker="o", linestyle="-")
+        plt.ion()
+
+    def add_to_polygon_chain(self, xs: Dict[str, float]) -> None:
+        if (
+            self.line is None
+            or len(xs) != 2
+            or set(xs.keys()) != set([self.x_axis_symbol, self.y_axis_symbol])
+        ):
+            return
+        # logger.debug(f"plotting point {xs=}")
+        self.x_data.append(xs[self.x_axis_symbol])
+        self.y_data.append(xs[self.y_axis_symbol])
+        self.line.set_data(self.x_data, self.y_data)
         self.draw()
+
+    def end_polygon_chain(self) -> None:
+        self.line = None
+        self.x_data.clear()
+        self.y_data.clear()
+        plt.ioff()

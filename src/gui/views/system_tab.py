@@ -243,7 +243,10 @@ class SystemTab(QWidget):
             show_error_message("method does not converge")
             return
         try:
-            res = solver.solve(system, starting_points, precision)
+            self.plot_container.canvas.start_polygon_chain()
+            self.plot_container.canvas.add_to_polygon_chain(starting_points)
+            res = solver.solve(system, starting_points, precision, self._plot_iteration)
+            self.plot_container.canvas.end_polygon_chain()
         except ValueError as e:
             show_error_message(str(e))
             return
@@ -254,6 +257,10 @@ class SystemTab(QWidget):
         self.set_result(xs, system.apply(xs), iterations)
         if len(xs) == 2:
             self.plot_container.canvas.plot_point(*[xs[sym] for sym in xs.keys()])
+
+    def _plot_iteration(self, xs: EquationSystemSolution, iteration: int) -> None:
+        # logger.debug(f"plot iteration {iteration=} {xs=}")
+        self.plot_container.canvas.add_to_polygon_chain({str(k): v for k, v in xs.items()})
 
     def save_to_file(self) -> None:
         if not self.result:

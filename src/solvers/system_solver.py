@@ -1,4 +1,4 @@
-from typing import Dict, Tuple
+from typing import Callable, Dict, Tuple
 
 import sympy as sp  # type: ignore
 
@@ -16,6 +16,7 @@ class SystemSolver:
         system: EquationSystem,
         starting_points: Dict[str, float],
         precision: float,
+        on_iteration: Callable[[EquationSystemSolution, int], None] | None = None,
     ) -> Tuple[EquationSystemSolution, int]:
         """
         @returns (x, iterations)

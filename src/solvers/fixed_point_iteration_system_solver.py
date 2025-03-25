@@ -1,4 +1,4 @@
-from typing import Dict, Tuple
+from typing import Callable, Dict, Tuple
 
 import sympy as sp  # type: ignore
 
@@ -28,6 +28,7 @@ class FixedPointIterationSystemSolver(SystemSolver):
         system: EquationSystem,
         starting_points: Dict[str, float],
         precision: float,
+        on_iteration: Callable[[EquationSystemSolution, int], None] | None = None,
     ) -> Tuple[EquationSystemSolution, int]:
         logger.debug(
             f"fixed point iteration: {system=} ; {precision=} ; {starting_points=}"
@@ -38,6 +39,8 @@ class FixedPointIterationSystemSolver(SystemSolver):
         for _ in range(self.MAX_ITERATIONS):
             iterations += 1
             xs = system.apply_phi(xs)
+            if on_iteration:
+                on_iteration(xs, iterations)
             if max(abs(xs[sym] - prev_xs[sym]) for sym in xs.keys()) <= precision:
                 return xs, iterations
             prev_xs = xs.copy()

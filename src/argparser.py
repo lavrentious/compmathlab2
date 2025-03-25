@@ -4,6 +4,7 @@ from argparse import Namespace
 from io import TextIOWrapper
 from typing import Any
 
+from config import GlobalConfig
 from logger import Logger
 
 
@@ -15,7 +16,8 @@ class ArgParser:
 
     # args
     help_mode: bool = False  # help mode
-    verbose: bool
+    force_solve_system: bool = False
+    verbose: bool = False
 
     def _register_args(self) -> None:
         self.parser.add_argument("-h", "--help", action="store_true", help="shows help")
@@ -24,6 +26,12 @@ class ArgParser:
             "--verbose",
             action="store_true",
             help="set verbose mode",
+        )
+        self.parser.add_argument(
+            "--force-solve-system",
+            action="store_true",
+            help="try to solve system even if it is not convergent",
+            default=False,
         )
 
     def __init__(self) -> None:
@@ -41,6 +49,10 @@ class ArgParser:
         self.verbose = self.args.verbose or False
         if self.args.help:
             self.help_mode = True
+
+        self.force_solve_system = self.args.force_solve_system or False
+
+        GlobalConfig().FORCE_SOLVE_SYSTEM = self.force_solve_system
 
         return 0
 

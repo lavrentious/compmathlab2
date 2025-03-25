@@ -17,7 +17,7 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 
-from config import EPS
+from config import EPS, GlobalConfig
 from gui.components.plot_container import PlotContainer
 from gui.guiutils import show_error_message
 from logger import GlobalLogger
@@ -261,7 +261,10 @@ class SystemTab(QWidget):
 
         if not solver.check_convergence(system, starting_xs):
             show_error_message("method does not converge")
-            return
+            if GlobalConfig().FORCE_SOLVE_SYSTEM:
+                logger.warning("system is non convergent, force solving due to flag")
+            else:
+                return
         try:
             self.plot_container.canvas.start_polygon_chain()
             self.plot_container.canvas.add_to_polygon_chain(starting_xs)

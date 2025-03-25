@@ -2,6 +2,8 @@ from enum import Enum
 from io import TextIOWrapper
 from typing import Any
 
+from utils.meta import singleton
+
 
 class LogLevel(Enum):
     DEBUG = 1
@@ -55,17 +57,6 @@ class Logger:
 
     def critical(self, *args: Any, sep: str = " ", end: str = "\n") -> None:
         self.log(*args, level=LogLevel.CRITICAL, sep=sep, end=end)
-
-
-def singleton(class_: Any) -> Any:
-    instances = {}
-
-    def getinstance(*args: Any, **kwargs: Any) -> Any:
-        if class_ not in instances:
-            instances[class_] = class_(*args, **kwargs)
-        return instances[class_]
-
-    return getinstance
 
 
 @singleton

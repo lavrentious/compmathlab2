@@ -173,6 +173,11 @@ class SystemTab(QWidget):
             self.starting_points_inputs[str(symbol)] = starting_point_input
             self.starting_points_vbox.addWidget(starting_point_input)
 
+        if len(system.symbols) == 2:
+            self.plot_container.canvas.set_x_y_symbols(
+                *sorted(map(str, system.symbols))
+            )
+
     def set_result(
         self, xs: EquationSystemSolution, ys: List[float], iterations: int
     ) -> None:
@@ -260,7 +265,9 @@ class SystemTab(QWidget):
 
     def _plot_iteration(self, xs: EquationSystemSolution, iteration: int) -> None:
         # logger.debug(f"plot iteration {iteration=} {xs=}")
-        self.plot_container.canvas.add_to_polygon_chain({str(k): v for k, v in xs.items()})
+        self.plot_container.canvas.add_to_polygon_chain(
+            {str(k): v for k, v in xs.items()}
+        )
 
     def save_to_file(self) -> None:
         if not self.result:

@@ -20,8 +20,8 @@ class PlotCanvas(FigureCanvas):
     figure: Figure
     ax: Axes
 
-    x_axis_symbol: str
-    y_axis_symbol: str
+    x_axis_symbol: str | None = None
+    y_axis_symbol: str | None = None
 
     line: Line2D | None = None
     x_data: List[float] = []
@@ -74,11 +74,24 @@ class PlotCanvas(FigureCanvas):
                 X, Y = np.meshgrid(xs, ys)
                 Z = fn_np(X, Y)
                 self.ax.contour(X, Y, Z, levels=[0], colors="r")
+            if self.x_axis_symbol is None or self.y_axis_symbol is None:
+                logger.warning(
+                    "plot_system: x_axis_symbol or y_axis_symbol is None; assessing sorted order"
+                )
+                self.set_x_y_symbols(*sorted(map(str, system.symbols)))
             self.ax.set_xlabel(x.name)
             self.ax.set_ylabel(y.name)
-            self.x_axis_symbol = x.name
-            self.y_axis_symbol = y.name
             self.draw()
+
+    def set_x_y_symbols(self, x_axis_symbol: str, y_axis_symbol: str) -> None:
+        logger.debug(
+            f"setting x_axis_symbol to {x_axis_symbol}, y_axis_symbol to {y_axis_symbol}"
+        )
+        self.x_axis_symbol = x_axis_symbol
+        self.y_axis_symbol = y_axis_symbol
+        self.ax.set_xlabel(x_axis_symbol)
+        self.ax.set_ylabel(y_axis_symbol)
+        self.draw()
 
     def plot_point(self, x: float, y: float) -> None:
         logger.debug(f"plotting point ({x}, {y})")
@@ -86,6 +99,9 @@ class PlotCanvas(FigureCanvas):
         self.draw()
 
     def plot_point_multi(self, point: Dict[str, float]) -> None:
+        if self.x_axis_symbol is None or self.y_axis_symbol is None:
+            logger.warning("plot_point_multi: x_axis_symbol or y_axis_symbol is None")
+            return
         logger.debug(f"plotting point {point}")
         if len(point) != 2 or set(point.keys()) != set(
             [self.x_axis_symbol, self.y_axis_symbol]
@@ -98,6 +114,11 @@ class PlotCanvas(FigureCanvas):
         plt.ion()
 
     def add_to_polygon_chain(self, xs: Dict[str, float]) -> None:
+        if self.x_axis_symbol is None or self.y_axis_symbol is None:
+            logger.warning(
+                "add_to_polygon_chain: x_axis_symbol or y_axis_symbol is None"
+            )
+            return
         if (
             self.line is None
             or len(xs) != 2

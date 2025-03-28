@@ -14,8 +14,8 @@ class SystemSolver:
     def solve(
         self,
         system: EquationSystem,
-        starting_xs: Dict[str, float],
-        precision: float,
+        starting_xs: Dict[str, sp.Float],
+        precision: sp.Float,
         on_iteration: Callable[[EquationSystemSolution, int], None] | None = None,
     ) -> Tuple[EquationSystemSolution, int]:
         """
@@ -24,6 +24,6 @@ class SystemSolver:
         return {}, 0
 
     def check_convergence(
-        self, system: EquationSystem, starting_xs: Dict[str, float]
+        self, system: EquationSystem, starting_xs: Dict[str, sp.Float]
     ) -> bool:
         return True

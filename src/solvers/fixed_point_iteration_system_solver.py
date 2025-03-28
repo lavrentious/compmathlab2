@@ -16,8 +16,8 @@ class FixedPointIterationSystemSolver(SystemSolver):
         pass
 
     def _starting_xs_to_symbols(
-        self, system: EquationSystem, starting_xs: Dict[str, float]
-    ) -> Dict[sp.Symbol, float]:
+        self, system: EquationSystem, starting_xs: Dict[str, sp.Float]
+    ) -> Dict[sp.Symbol, sp.Float]:
         system_symbols_strs = [s.name for s in system.symbols]
         if set(starting_xs.keys()) != set(system_symbols_strs):
             raise ValueError("starting xs symbols do not match equation system symbols")
@@ -26,8 +26,8 @@ class FixedPointIterationSystemSolver(SystemSolver):
     def solve(
         self,
         system: EquationSystem,
-        starting_xs: Dict[str, float],
-        precision: float,
+        starting_xs: Dict[str, sp.Float],
+        precision: sp.Float,
         on_iteration: Callable[[EquationSystemSolution, int], None] | None = None,
     ) -> Tuple[EquationSystemSolution, int]:
         logger.debug(
@@ -47,7 +47,7 @@ class FixedPointIterationSystemSolver(SystemSolver):
         raise ValueError("no convergence")
 
     def check_convergence(
-        self, system: EquationSystem, starting_xs: Dict[str, float]
+        self, system: EquationSystem, starting_xs: Dict[str, sp.Float]
     ) -> bool:
         for e in system.equations:
             s = sum(abs(e.dphi(symbol, starting_xs)) for symbol in system.symbols)

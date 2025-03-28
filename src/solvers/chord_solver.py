@@ -1,12 +1,14 @@
 from typing import Tuple
 
+import sympy as sp  # type: ignore
+
 from solvers.solver import Solver
 from utils.equations import Equation
 from utils.math import signs_equal
 
 
 class ChordSolver(Solver):
-    def solve(self, equation: Equation, precision: float) -> Tuple[float, int]:
+    def solve(self, equation: Equation, precision: sp.Float) -> Tuple[sp.Float, int]:
         a, b = equation.interval_l, equation.interval_r
         f = equation.f
         prev_x = a - 10 * precision

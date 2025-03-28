@@ -1,6 +1,6 @@
-from enum import Enum
 from typing import Dict, List, Tuple
 
+import sympy as sp  # type: ignore
 from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import (
     QComboBox,
@@ -23,21 +23,20 @@ from gui.guiutils import show_error_message
 from logger import GlobalLogger
 from solvers.fixed_point_iteration_system_solver import FixedPointIterationSystemSolver
 from solvers.system_solver import SystemSolver
-from utils.equations import SYSTEM_PRESETS, EquationSystem, EquationSystemSolution
-from utils.validation import is_float, to_float
+from utils.equations import (
+    SYSTEM_PRESETS,
+    EquationSystem,
+    EquationSystemSolution,
+    SystemSolutionMethod,
+)
+from utils.validation import is_float, to_sp_float
 from utils.writer import ResWriter, SystemSolutionResult
 
 logger = GlobalLogger()
 
 
-class SolutionMethod(Enum):
-    FIXED_POINT_ITERATION = "Fixed point iteration"
-
-
 class SystemTab(QWidget):
-    result: Tuple[EquationSystem, EquationSystemSolution, List[float], int] | None = (
-        None  # system ; result map ; equations(x1, ... xn) ; iteration count
-    )
+    result: SystemSolutionResult | None = None
     equation_system: EquationSystem | None = None
     equation_inputs: List[QLineEdit]
     starting_xs_inputs: Dict[str, QLineEdit]
@@ -85,7 +84,7 @@ class SystemTab(QWidget):
         vbox0.addWidget(self.precision_input)
 
         self.method_combobox = QComboBox()
-        self.method_combobox.addItems([method.value for method in SolutionMethod])
+        self.method_combobox.addItems([method.value for method in SystemSolutionMethod])
         vbox0.addWidget(self.method_combobox)
 
         self.solve_button = QPushButton("Solve")
@@ -179,11 +178,17 @@ class SystemTab(QWidget):
             )
 
     def set_result(
-        self, xs: EquationSystemSolution, ys: List[float], iterations: int
+        self,
+        xs: EquationSystemSolution,
+        ys: List[sp.Float],
+        iterations: int,
+        solution_method: SystemSolutionMethod,
     ) -> None:
         if self.equation_system is None:
             return
-        self.result = (self.equation_system, xs, ys, iterations)
+        self.result = SystemSolutionResult(
+            self.equation_system, xs, ys, iterations, solution_method
+        )
         self.result_table.setItem(0, 0, QTableWidgetItem(str(xs)))
         self.result_table.setItem(0, 1, QTableWidgetItem(str(ys)))
         self.result_table.setItem(0, 2, QTableWidgetItem(str(iterations)))
@@ -191,20 +196,22 @@ class SystemTab(QWidget):
     def _parse_validate_system(self) -> EquationSystem | None:
         return self.equation_system
 
-    def _parse_validate_starting_xs(self) -> Dict[str, float]:
+    def _parse_validate_starting_xs(self) -> Dict[str, sp.Float]:
         for symbol, starting_point_input in self.starting_xs_inputs.items():
             if not starting_point_input.text():
                 raise ValueError(f"Starting point for {symbol} is empty")
             if not is_float(starting_point_input.text()):
                 raise ValueError(f"Starting point for {symbol} is not a float")
         return {
-            symbol: to_float(starting_point_input.text())
+            symbol: to_sp_float(starting_point_input.text())
             for symbol, starting_point_input in self.starting_xs_inputs.items()
         }
 
     def _parse_validate_values(
         self,
-    ) -> Tuple[EquationSystem | None, float, SolutionMethod, Dict[str, float]]:
+    ) -> Tuple[
+        EquationSystem | None, sp.Float, SystemSolutionMethod, Dict[str, sp.Float]
+    ]:
         system = self._parse_validate_system()
         starting_xs = self._parse_validate_starting_xs()
         precision = self.precision_input.text()
@@ -215,14 +222,14 @@ class SystemTab(QWidget):
 
         return (
             system,
-            to_float(precision),
-            SolutionMethod(self.method_combobox.currentText()),
+            to_sp_float(precision),
+            SystemSolutionMethod(self.method_combobox.currentText()),
             starting_xs,
         )
 
     def parse_validate_plot(
         self,
-    ) -> Tuple[EquationSystem, float, SolutionMethod, Dict[str, float]]:
+    ) -> Tuple[EquationSystem, sp.Float, SystemSolutionMethod, Dict[str, sp.Float]]:
         system, precision, solution_method, starting_xs = self._parse_validate_values()
         if system is None:
             raise ValueError("Equation system could not be parsed")
@@ -255,7 +262,7 @@ class SystemTab(QWidget):
         logger.debug("precision", precision)
 
         solver = SystemSolver()
-        if solution_method == SolutionMethod.FIXED_POINT_ITERATION:
+        if solution_method == SystemSolutionMethod.FIXED_POINT_ITERATION:
             logger.debug("using fixed point iteration")
             solver = FixedPointIterationSystemSolver()
 
@@ -277,7 +284,7 @@ class SystemTab(QWidget):
             return
         xs, iterations = res
         logger.debug(f"solution success, {xs=}, {iterations=}")
-        self.set_result(xs, system.apply(xs), iterations)
+        self.set_result(xs, system.apply(xs), iterations, solution_method)
         if len(xs) == 2:
             self.plot_container.canvas.plot_point(*[xs[sym] for sym in xs.keys()])
 
@@ -291,15 +298,11 @@ class SystemTab(QWidget):
         if not self.result:
             show_error_message("эээ баклан")
             return
-        equation_str, x, y, iterations = self.result
         file_path, _ = QFileDialog.getSaveFileName(
             self, "Open File", "", "All Files (*)"
         )
         if file_path == "":
             return
         res_writer = ResWriter(file_path)
-        system, solution, ys, iterations = self.result
-        res_writer.write_system_solution(
-            SystemSolutionResult(system, solution, ys, iterations)
-        )
+        res_writer.write_system_solution(self.result)
         res_writer.destroy()

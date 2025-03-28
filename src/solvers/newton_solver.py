@@ -1,5 +1,7 @@
 from typing import Tuple
 
+import sympy as sp  # type: ignore
+
 from solvers.solver import Solver
 from utils.equations import Equation
 from utils.math import d2f as _d2f
@@ -20,10 +22,12 @@ class NewtonSolver(Solver):
 
         return True
 
-    def get_starting_point(self, equation: Equation, l: float, r: float) -> float:
+    def get_starting_point(
+        self, equation: Equation, l: sp.Float, r: sp.Float
+    ) -> sp.Float:
         return l
 
-    def solve(self, equation: Equation, precision: float) -> Tuple[float, int]:
+    def solve(self, equation: Equation, precision: sp.Float) -> Tuple[sp.Float, int]:
         interval_l, interval_r, f, df = (
             equation.interval_l,
             equation.interval_r,

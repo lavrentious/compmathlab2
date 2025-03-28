@@ -1,5 +1,7 @@
 from typing import Tuple
 
+import sympy as sp  # type: ignore
+
 from utils.equations import Equation
 
 
@@ -12,8 +14,8 @@ class Solver:
     def solve(
         self,
         equation: Equation,
-        precision: float,
-    ) -> Tuple[float, int]:
+        precision: sp.Float,
+    ) -> Tuple[sp.Float, int]:
         """
         @returns (x, iterations)
         """

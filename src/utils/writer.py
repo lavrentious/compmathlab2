@@ -8,7 +8,13 @@ from typing import Any, List
 import sympy as sp  # type: ignore
 
 from logger import GlobalLogger
-from utils.equations import Equation, EquationSystem, EquationSystemSolution
+from utils.equations import (
+    Equation,
+    EquationSystem,
+    EquationSystemSolution,
+    SolutionMethod,
+    SystemSolutionMethod,
+)
 
 logger = GlobalLogger()
 
@@ -23,31 +29,43 @@ class SolutionResult:
     x: sp.Float
     y: sp.Float
     iterations: int
+    solution_method: SolutionMethod | None = None
 
-    def __init__(self, equation: Equation, x: float, y: float, iterations: int):
+    def __init__(
+        self,
+        equation: Equation,
+        x: sp.Float,
+        y: sp.Float,
+        iterations: int,
+        solution_method: SolutionMethod | None = None,
+    ):
         self.equation = equation
         self.x = x
         self.y = y
         self.iterations = iterations
+        self.solution_method = solution_method
 
 
 class SystemSolutionResult:
     system: EquationSystem
     solution: EquationSystemSolution
-    ys: List[float]
+    ys: List[sp.Float]
     iterations: int
+    solution_method: SystemSolutionMethod | None = None
 
     def __init__(
         self,
         system: EquationSystem,
         solution: EquationSystemSolution,
-        ys: List[float],
+        ys: List[sp.Float],
         iterations: int,
+        solution_method: SystemSolutionMethod | None = None,
     ):
         self.system = system
         self.solution = solution
         self.ys = ys
         self.iterations = iterations
+        self.solution_method = solution_method
 
 
 class ResWriter:
@@ -100,11 +118,12 @@ class PlainWriter(ResWriter):
         self.out_stream.write(f"f'(x) = {result.equation.df_str()}\n")
         self.out_stream.write(f"phi'(x) = {result.equation.dphi_str()}\n")
         self.out_stream.write(
-            f"Interval: [{result.equation.interval_l}, {result.equation.interval_r}]\n"
+            f"Interval: [{str(result.equation.interval_l)}, {str(result.equation.interval_r)}]\n"
         )
-        self.out_stream.write(f"x: {result.x}\n")
-        self.out_stream.write(f"y: {result.y}\n")
+        self.out_stream.write(f"x: {str(result.x)}\n")
+        self.out_stream.write(f"y: {str(result.y)}\n")
         self.out_stream.write(f"Iterations: {result.iterations}\n")
+        self.out_stream.write(f"solution_method: {result.solution_method}\n")
         self.out_stream.flush()
 
     def write_system_solution(self, result: SystemSolutionResult) -> None:
@@ -116,8 +135,16 @@ class PlainWriter(ResWriter):
             self.out_stream.write(
                 f"    phi: {str(equation.phi_lhs)} = {equation.phi_str()}\n"
             )
-        self.out_stream.write(f"Solution: {result.solution}\n")
+        self.out_stream.write(f"Solution:\n")
+        for k, v in result.solution.items():
+            self.out_stream.write(f"    {k}: {str(v)}\n")
+        self.out_stream.write(f"ys:\n")
+        for i in range(len(result.system.equations)):
+            self.out_stream.write(
+                f"    {result.system.equations[i].f_str()} = {str(result.ys[i])}\n"
+            )
         self.out_stream.write(f"Iterations: {result.iterations}\n")
+        self.out_stream.write(f"solution_method: {result.solution_method}\n")
         self.out_stream.flush()
 
 
@@ -129,10 +156,14 @@ class JsonWriter(ResWriter):
             "phi": result.equation.phi_str(),
             "f'": result.equation.df_str(),
             "phi'": result.equation.dphi_str(),
-            "interval": [result.equation.interval_l, result.equation.interval_r],
+            "interval": [
+                str(result.equation.interval_l),
+                str(result.equation.interval_r),
+            ],
             "x": str(result.x),
             "y": str(result.y),
             "iterations": result.iterations,
+            "solution_method": result.solution_method,
         }
         logger.debug("dumping json", obj)
 
@@ -157,8 +188,9 @@ class JsonWriter(ResWriter):
                 for equation in result.system.equations
             ],
             "solution": {str(k): str(v) for k, v in result.solution.items()},
-            "ys": [float(y) for y in result.ys],
+            "ys": [str(y) for y in result.ys],
             "iterations": result.iterations,
+            "solution_method": result.solution_method,
         }
         logger.debug("dumping json", obj)
 

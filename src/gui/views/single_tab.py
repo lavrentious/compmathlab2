@@ -1,4 +1,3 @@
-from enum import Enum
 from typing import Callable, Tuple
 
 import numpy as np
@@ -28,18 +27,12 @@ from solvers.chord_solver import ChordSolver
 from solvers.fixed_point_iteration_solver import FixedPointIterationSolver
 from solvers.newton_solver import NewtonSolver
 from solvers.solver import Solver
-from utils.equations import Equation
+from utils.equations import Equation, SolutionMethod
 from utils.math import check_single_root
-from utils.validation import is_float, to_float
+from utils.validation import is_float, to_sp_float
 from utils.writer import ResWriter, SolutionResult
 
 logger = GlobalLogger()
-
-
-class SolutionMethod(Enum):
-    CHORD = "Chord"
-    NEWTON = "Newton"
-    FIXED_POINT_ITERATION = "Fixed point iteration"
 
 
 class SingleTab(QWidget):
@@ -134,14 +127,14 @@ class SingleTab(QWidget):
         self.setLayout(grid0)
 
     def set_result(
-        self, equation: Equation, x: float, y: float, iterations: int
+        self, equation: Equation, x: sp.Float, y: sp.Float, iterations: int
     ) -> None:
         self.result = SolutionResult(equation, x, y, iterations)
         self.result_table.setItem(0, 0, QTableWidgetItem(str(x)))
         self.result_table.setItem(1, 0, QTableWidgetItem(str(y)))
         self.result_table.setItem(2, 0, QTableWidgetItem(str(iterations)))
 
-    def _parse_values(self) -> Tuple[str, float, float, float, SolutionMethod]:
+    def _parse_values(self) -> Tuple[str, sp.Float, sp.Float, sp.Float, SolutionMethod]:
         equation = self.equation_input.text()
         interval_l = self.interval_l_input.text()
         interval_r = self.interval_r_input.text()
@@ -162,13 +155,13 @@ class SingleTab(QWidget):
             raise ValueError("Precision is not a float")
         return (
             equation,
-            to_float(interval_l),
-            to_float(interval_r),
-            to_float(precision),
+            to_sp_float(interval_l),
+            to_sp_float(interval_r),
+            to_sp_float(precision),
             SolutionMethod(self.method_combobox.currentText()),
         )
 
-    def parse_validate_plot(self) -> Tuple[Equation, float, SolutionMethod]:
+    def parse_validate_plot(self) -> Tuple[Equation, sp.Float, SolutionMethod]:
         equation_str, interval_l, interval_r, precision, solution_method = (
             self._parse_values()
         )
@@ -229,7 +222,9 @@ class SingleTab(QWidget):
         self.set_result(equation, x, equation.f(x), iterations)
         self.plot_container.canvas.plot_point(x, equation.f(x))
 
-    def plot_function(self, fn: Callable[[float], float], l: float, r: float) -> None:
+    def plot_function(
+        self, fn: Callable[[sp.Float], sp.Float], l: sp.Float, r: sp.Float
+    ) -> None:
         w = r - l
         xs = np.linspace(l - w * 0.1, r + w * 0.1, 1000)
         ys = [fn(x) for x in xs]

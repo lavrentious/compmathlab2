@@ -1,9 +1,11 @@
 import math
 import re
+from enum import Enum
 from typing import Dict, List, Set
 
 import sympy as sp  # type: ignore
 
+from config import PRECISION
 from logger import GlobalLogger
 from utils.math import d2f as _d2f
 from utils.math import df as _df
@@ -11,7 +13,11 @@ from utils.math import get_phi_with_lambda
 
 logger = GlobalLogger()
 
-EquationSystemSolution = dict[sp.Symbol, float]
+
+class SolutionMethod(Enum):
+    CHORD = "Chord"
+    NEWTON = "Newton"
+    FIXED_POINT_ITERATION = "Fixed point iteration"
 
 
 class Equation:
@@ -24,13 +30,13 @@ class Equation:
     phi: sp.Lambda
     dphi: sp.Lambda
 
-    interval_l: float
-    interval_r: float
+    interval_l: sp.Float
+    interval_r: sp.Float
 
     def __init__(
         self,
-        interval_l: float,
-        interval_r: float,
+        interval_l: sp.Float,
+        interval_r: sp.Float,
         equation_str: str | None = None,
         f: sp.Lambda | None = None,
         phi: sp.Lambda | None = None,
@@ -117,6 +123,16 @@ class Equation:
         return func
 
 
+# ----- systems -----
+
+
+class SystemSolutionMethod(Enum):
+    FIXED_POINT_ITERATION = "Fixed point iteration"
+
+
+EquationSystemSolution = dict[sp.Symbol, sp.Float]
+
+
 class MultivariableEquation:
     # f(x1, ..., xn) = 0
     f: sp.Lambda
@@ -131,14 +147,14 @@ class MultivariableEquation:
         self.phi = sp.Lambda(tuple(f.expr.free_symbols), phi)
         self.phi_lhs = phi_lhs
 
-    def compute(self, xs: Dict[sp.Symbol, float]) -> sp.Float:
-        return self.f(*[xs[sym] for sym in self.f.args[0]])
+    def compute(self, xs: Dict[sp.Symbol, sp.Float]) -> sp.Float:
+        return self.f(*xs.keys()).subs(xs).evalf(PRECISION)
 
-    def df(self, symbol: sp.Symbol, xs: Dict[sp.Symbol, float]) -> sp.Float:
+    def df(self, symbol: sp.Symbol, xs: Dict[sp.Symbol, sp.Float]) -> sp.Float:
         logger.debug(f"computing df {self.f_str()} {sp.diff(self.f.expr, symbol)}")
         return sp.diff(self.f.expr, symbol).subs(xs.items())
 
-    def dphi(self, symbol: sp.Symbol, xs: Dict[sp.Symbol, float]) -> sp.Float:
+    def dphi(self, symbol: sp.Symbol, xs: Dict[sp.Symbol, sp.Float]) -> sp.Float:
         logger.debug(
             f"computing dphi {self.phi_str()} {sp.diff(self.phi.expr, symbol)}"
         )
@@ -166,7 +182,7 @@ class EquationSystem:
                 f"Symbols {self.symbols - expressed_symbols} are not defined in terms of other symbols with phis"
             )
 
-    def apply(self, xs: EquationSystemSolution) -> List[float]:
+    def apply(self, xs: EquationSystemSolution) -> List[sp.Float]:
         return [e.compute(xs) for e in self.equations]
 
     def get_phi_map(self) -> Dict[sp.Symbol, sp.Lambda]:

@@ -2,21 +2,29 @@ from typing import Callable, Tuple
 
 import sympy as sp  # type: ignore
 
+from config import PRECISION
+from logger import GlobalLogger
+
 SAMPLES_COUNT = 1000
 
+type Number = int | float | sp.Float
 
-def df(f: Callable[[float], float], x: float) -> float:
+
+logger = GlobalLogger()
+
+
+def df(f: Callable[[Number], Number], x: Number) -> sp.Float:
     # return derivative(f, x)["df"]
-    H = 0.0001
+    H = sp.Float("0.0001")
     return (f(x + H) - f(x - H)) / (2 * H)
 
 
-def d2f(f: Callable[[float], float], x: float) -> float:
-    H = 0.0001
+def d2f(f: Callable[[Number], Number], x: Number) -> sp.Float:
+    H = sp.Float("0.0001")
     return (f(x + H) - 2 * f(x) + f(x - H)) / H**2
 
 
-def keeps_sign(f: Callable[[float], float], l: float, r: float) -> bool:
+def keeps_sign(f: Callable[[Number], Number], l: Number, r: Number) -> bool:
     d = (r - l) / SAMPLES_COUNT
     x = l
     while x <= r:
@@ -26,11 +34,11 @@ def keeps_sign(f: Callable[[float], float], l: float, r: float) -> bool:
     return True
 
 
-def signs_equal(a: int | float, b: int | float) -> bool:
+def signs_equal(a: Number, b: Number) -> bool:
     return (a > 0 and b > 0) or (a < 0 and b < 0)
 
 
-def max_in_interval(f: Callable[[float], float], l: float, r: float) -> float:
+def max_in_interval(f: Callable[[Number], Number], l: Number, r: Number) -> sp.Float:
     d = (r - l) / SAMPLES_COUNT
     x = l
     max_val = f(l)
@@ -41,7 +49,7 @@ def max_in_interval(f: Callable[[float], float], l: float, r: float) -> float:
     return max_val
 
 
-def min_in_interval(f: Callable[[float], float], l: float, r: float) -> float:
+def min_in_interval(f: Callable[[Number], Number], l: Number, r: Number) -> sp.Float:
     d = (r - l) / SAMPLES_COUNT
     x = l
     min_val = f(l)
@@ -52,7 +60,7 @@ def min_in_interval(f: Callable[[float], float], l: float, r: float) -> float:
     return min_val
 
 
-def check_single_root(f: Callable[[float], float], l: float, r: float) -> bool:
+def check_single_root(f: Callable[[Number], Number], l: Number, r: Number) -> bool:
     _df = lambda x: df(f, x)
 
     if signs_equal(f(l), f(r)):
@@ -75,7 +83,7 @@ def check_single_root(f: Callable[[float], float], l: float, r: float) -> bool:
 
 
 def get_phi_with_lambda(
-    f: sp.Lambda, l: float, r: float
+    f: sp.Lambda, l: Number, r: Number
 ) -> Tuple[sp.Lambda, sp.Lambda]:
     """
     returns phi and phi' for a single variable function with lambda method
@@ -84,7 +92,8 @@ def get_phi_with_lambda(
     f_expr = f(x)
 
     _df = sp.diff(f_expr, x)
-    m = 1 / max_in_interval(lambda x: abs(_df.subs(x, x)), l, r)
+    m = 1 / max_in_interval(lambda val: abs(_df.evalf(PRECISION).subs(x, val)), l, r)
+    logger.debug("m", m)
 
     if _df.subs(x, (l + r) / 2) > 0:
         m *= -1

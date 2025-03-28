@@ -127,9 +127,14 @@ class SingleTab(QWidget):
         self.setLayout(grid0)
 
     def set_result(
-        self, equation: Equation, x: sp.Float, y: sp.Float, iterations: int
+        self,
+        equation: Equation,
+        x: sp.Float,
+        y: sp.Float,
+        iterations: int,
+        solution_method: SolutionMethod,
     ) -> None:
-        self.result = SolutionResult(equation, x, y, iterations)
+        self.result = SolutionResult(equation, x, y, iterations, solution_method)
         self.result_table.setItem(0, 0, QTableWidgetItem(str(x)))
         self.result_table.setItem(1, 0, QTableWidgetItem(str(y)))
         self.result_table.setItem(2, 0, QTableWidgetItem(str(iterations)))
@@ -219,7 +224,7 @@ class SingleTab(QWidget):
         if not res:
             return
         x, iterations = res
-        self.set_result(equation, x, equation.f(x), iterations)
+        self.set_result(equation, x, equation.f(x), iterations, solution_method)
         self.plot_container.canvas.plot_point(x, equation.f(x))
 
     def plot_function(

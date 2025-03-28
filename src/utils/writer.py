@@ -123,7 +123,8 @@ class PlainWriter(ResWriter):
         self.out_stream.write(f"x: {str(result.x)}\n")
         self.out_stream.write(f"y: {str(result.y)}\n")
         self.out_stream.write(f"Iterations: {result.iterations}\n")
-        self.out_stream.write(f"solution_method: {result.solution_method}\n")
+        if result.solution_method:
+            self.out_stream.write(f"solution_method: {result.solution_method.value}\n")
         self.out_stream.flush()
 
     def write_system_solution(self, result: SystemSolutionResult) -> None:
@@ -144,7 +145,8 @@ class PlainWriter(ResWriter):
                 f"    {result.system.equations[i].f_str()} = {str(result.ys[i])}\n"
             )
         self.out_stream.write(f"Iterations: {result.iterations}\n")
-        self.out_stream.write(f"solution_method: {result.solution_method}\n")
+        if result.solution_method:
+            self.out_stream.write(f"solution_method: {result.solution_method.value}\n")
         self.out_stream.flush()
 
 
@@ -163,7 +165,9 @@ class JsonWriter(ResWriter):
             "x": str(result.x),
             "y": str(result.y),
             "iterations": result.iterations,
-            "solution_method": result.solution_method,
+            "solution_method": (
+                result.solution_method.name if result.solution_method else None
+            ),
         }
         logger.debug("dumping json", obj)
 
@@ -190,7 +194,9 @@ class JsonWriter(ResWriter):
             "solution": {str(k): str(v) for k, v in result.solution.items()},
             "ys": [str(y) for y in result.ys],
             "iterations": result.iterations,
-            "solution_method": result.solution_method,
+            "solution_method": (
+                result.solution_method.name if result.solution_method else None
+            ),
         }
         logger.debug("dumping json", obj)
 

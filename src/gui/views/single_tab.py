@@ -2,6 +2,7 @@ from enum import Enum
 from typing import Callable, Tuple
 
 import numpy as np
+import sympy as sp  # type: ignore
 from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import (
     QComboBox,
@@ -30,7 +31,7 @@ from solvers.solver import Solver
 from utils.equations import Equation
 from utils.math import check_single_root
 from utils.validation import is_float, to_float
-from utils.writer import ResWriter
+from utils.writer import ResWriter, SolutionResult
 
 logger = GlobalLogger()
 
@@ -42,7 +43,7 @@ class SolutionMethod(Enum):
 
 
 class SingleTab(QWidget):
-    result: Tuple[Equation, float, float, int] | None = None
+    result: SolutionResult | None = None
     equation_input: QLineEdit
     interval_l_input: QLineEdit
     interval_r_input: QLineEdit
@@ -135,7 +136,7 @@ class SingleTab(QWidget):
     def set_result(
         self, equation: Equation, x: float, y: float, iterations: int
     ) -> None:
-        self.result = (equation, x, y, iterations)
+        self.result = SolutionResult(equation, x, y, iterations)
         self.result_table.setItem(0, 0, QTableWidgetItem(str(x)))
         self.result_table.setItem(1, 0, QTableWidgetItem(str(y)))
         self.result_table.setItem(2, 0, QTableWidgetItem(str(iterations)))
@@ -185,14 +186,13 @@ class SingleTab(QWidget):
         if not self.result:
             show_error_message("эээ баклан")
             return
-        equation, x, y, iterations = self.result
         file_path, _ = QFileDialog.getSaveFileName(
             self, "Open File", "", "All Files (*)"
         )
         if not file_path:
             return
-        res_writer = ResWriter(open(file_path, "w"))
-        res_writer.write(equation, x, y, iterations)
+        res_writer = ResWriter(file_path)
+        res_writer.write_solution(self.result)
         res_writer.destroy()
 
     def solve_equation(self) -> None:

@@ -25,7 +25,7 @@ from solvers.fixed_point_iteration_system_solver import FixedPointIterationSyste
 from solvers.system_solver import SystemSolver
 from utils.equations import SYSTEM_PRESETS, EquationSystem, EquationSystemSolution
 from utils.validation import is_float, to_float
-from utils.writer import ResWriter
+from utils.writer import ResWriter, SystemSolutionResult
 
 logger = GlobalLogger()
 
@@ -297,7 +297,9 @@ class SystemTab(QWidget):
         )
         if file_path == "":
             return
-        res_writer = ResWriter(open(file_path, "w"))
-        # TODO
-        # res_writer.write(equation_str, x, y, iterations)
+        res_writer = ResWriter(file_path)
+        system, solution, ys, iterations = self.result
+        res_writer.write_system_solution(
+            SystemSolutionResult(system, solution, ys, iterations)
+        )
         res_writer.destroy()

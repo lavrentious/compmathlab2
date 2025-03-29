@@ -172,6 +172,7 @@ class SystemTab(QWidget):
             self.starting_xs_inputs[str(symbol)] = starting_point_input
             self.starting_xs_vbox.addWidget(starting_point_input)
 
+        self.plot_container.canvas.clear()
         if len(system.symbols) == 2:
             self.plot_container.canvas.set_x_y_symbols(
                 *sorted(map(str, system.symbols))
@@ -277,7 +278,7 @@ class SystemTab(QWidget):
             self.plot_container.canvas.add_to_polygon_chain(starting_xs)
             res = solver.solve(system, starting_xs, precision, self._plot_iteration)
             self.plot_container.canvas.end_polygon_chain()
-        except ValueError as e:
+        except Exception as e:
             show_error_message(str(e))
             return
         if not res:

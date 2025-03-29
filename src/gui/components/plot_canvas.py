@@ -33,6 +33,8 @@ class PlotCanvas(FigureCanvas):
         self.ax.autoscale(False)
 
     def clear(self) -> None:
+        self.x_data.clear()
+        self.y_data.clear()
         self.ax.clear()
 
     def plot_function(

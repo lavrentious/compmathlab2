@@ -9,7 +9,7 @@ class EquationSolverApp(QMainWindow):
         super().__init__()
 
         self.setWindowTitle("pupka zalupka v1.0")
-        self.setGeometry(100, 100, 800, 600)
+        self.setGeometry(100, 100, 800, 700)
 
         central_widget = QWidget()
         self.setCentralWidget(central_widget)

@@ -17,11 +17,11 @@ class SystemSolver:
         starting_xs: Dict[str, sp.Float],
         precision: sp.Float,
         on_iteration: Callable[[EquationSystemSolution, int], None] | None = None,
-    ) -> Tuple[EquationSystemSolution, int]:
+    ) -> Tuple[EquationSystemSolution, int] | None:
         """
         @returns (x, iterations)
         """
-        return {}, 0
+        return None
 
     def check_convergence(
         self, system: EquationSystem, starting_xs: Dict[str, sp.Float]

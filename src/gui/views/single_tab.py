@@ -220,12 +220,16 @@ class SingleTab(QWidget):
         if not solver.check_convergence(equation):
             show_error_message("method does not converge")
             return
-        res = solver.solve(equation, precision)
-        if not res:
+        try:
+            res = solver.solve(equation, precision)
+            if res is None:
+                raise ValueError("method does not converge")
+            x, iterations = res
+            self.set_result(equation, x, equation.f(x), iterations, solution_method)
+            self.plot_container.canvas.plot_point(x, equation.f(x))
+        except Exception as e:
+            show_error_message(str(e))
             return
-        x, iterations = res
-        self.set_result(equation, x, equation.f(x), iterations, solution_method)
-        self.plot_container.canvas.plot_point(x, equation.f(x))
 
     def plot_function(
         self, fn: Callable[[sp.Float], sp.Float], l: sp.Float, r: sp.Float

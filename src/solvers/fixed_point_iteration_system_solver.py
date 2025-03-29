@@ -29,7 +29,7 @@ class FixedPointIterationSystemSolver(SystemSolver):
         starting_xs: Dict[str, sp.Float],
         precision: sp.Float,
         on_iteration: Callable[[EquationSystemSolution, int], None] | None = None,
-    ) -> Tuple[EquationSystemSolution, int]:
+    ) -> Tuple[EquationSystemSolution, int] | None:
         logger.debug(
             f"fixed point iteration: {system=} ; {precision=} ; {starting_xs=}"
         )
@@ -44,7 +44,7 @@ class FixedPointIterationSystemSolver(SystemSolver):
             if max(abs(xs[sym] - prev_xs[sym]) for sym in xs.keys()) <= precision:
                 return xs, iterations
             prev_xs = xs.copy()
-        raise ValueError("no convergence")
+        return None
 
     def check_convergence(
         self, system: EquationSystem, starting_xs: Dict[str, sp.Float]

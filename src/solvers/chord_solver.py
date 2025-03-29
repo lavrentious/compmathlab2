@@ -7,24 +7,25 @@ from utils.equations import Equation
 from utils.math import signs_equal
 
 
+MAX_ITERATIONS = 100
+
+
 class ChordSolver(Solver):
-    def solve(self, equation: Equation, precision: sp.Float) -> Tuple[sp.Float, int]:
+    def solve(self, equation: Equation, precision: sp.Float) -> Tuple[sp.Float, int] | None:
         a, b = equation.interval_l, equation.interval_r
         f = equation.f
         prev_x = a - 10 * precision
-        iterations = 0
-        while True:
+        for i in range(MAX_ITERATIONS):
             x = a - (b - a) / (f(b) - f(a)) * f(a)
             if signs_equal(f(x), f(a)):
                 a = x
             else:
                 b = x
-            iterations += 1
             if (
                 x - prev_x <= precision
                 or abs(a - b) <= precision
                 or abs(f(x)) <= precision
             ):
-                break
+                return x, i + 1
             prev_x = x
-        return x, iterations
+        return None

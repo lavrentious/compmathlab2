@@ -9,6 +9,8 @@ from utils.math import keeps_sign
 
 
 class NewtonSolver(Solver):
+    MAX_ITERATIONS = 100
+
     def check_convergence(self, equation: Equation) -> bool:
         df, l, r = equation.df, equation.interval_l, equation.interval_r
         d2f = lambda x: _d2f(df, x)
@@ -27,7 +29,9 @@ class NewtonSolver(Solver):
     ) -> sp.Float:
         return l
 
-    def solve(self, equation: Equation, precision: sp.Float) -> Tuple[sp.Float, int]:
+    def solve(
+        self, equation: Equation, precision: sp.Float
+    ) -> Tuple[sp.Float, int] | None:
         interval_l, interval_r, f, df = (
             equation.interval_l,
             equation.interval_r,
@@ -36,15 +40,13 @@ class NewtonSolver(Solver):
         )
         x = self.get_starting_point(equation, interval_l, interval_r)
         prev_x = x - 10 * precision
-        iterations = 0
-        while True:
-            iterations += 1
+        for i in range(self.MAX_ITERATIONS):
             x = x - f(x) / df(x)
             if (
                 x - prev_x <= precision
                 or abs(f(x) / df(x)) <= precision
                 or abs(f(x)) <= precision
             ):
-                break
+                return x, i
             prev_x = x
-        return x, iterations
+        return None

@@ -15,7 +15,7 @@ class Solver:
         self,
         equation: Equation,
         precision: sp.Float,
-    ) -> Tuple[sp.Float, int]:
+    ) -> Tuple[sp.Float, int] | None:
         """
         @returns (x, iterations)
         """

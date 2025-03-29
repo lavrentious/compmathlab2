@@ -2,8 +2,12 @@ from typing import Tuple
 
 import sympy as sp  # type: ignore
 
+from logger import GlobalLogger
 from solvers.solver import Solver
 from utils.equations import Equation
+
+
+logger = GlobalLogger()
 
 
 class FixedPointIterationSolver(Solver):
@@ -18,7 +22,14 @@ class FixedPointIterationSolver(Solver):
     ) -> sp.Float:
         return (l + r) / 2
 
-    def solve(self, equation: Equation, precision: sp.Float) -> Tuple[sp.Float, int]:
+    def solve(
+        self, equation: Equation, precision: sp.Float
+    ) -> Tuple[sp.Float, int] | None:
+        logger.debug("solving fixed point iteration")
+        logger.debug(f"precision: {type(precision)} {precision}")
+        logger.debug(f"interval_l: {type(equation.interval_l)} {equation.interval_l}")
+        logger.debug(f"interval_r: {type(equation.interval_r)} {equation.interval_r}")
+
         interval_l, interval_r, fn, phi = (
             equation.interval_l,
             equation.interval_r,
@@ -34,7 +45,7 @@ class FixedPointIterationSolver(Solver):
             if abs(x - prev_x) <= precision:
                 return x, iterations
             prev_x = x
-        raise ValueError("no convergence")
+        return None
 
     def check_convergence(self, equation: Equation) -> bool:
         l, r, dphi = (

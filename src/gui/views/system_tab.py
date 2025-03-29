@@ -277,6 +277,8 @@ class SystemTab(QWidget):
             self.plot_container.canvas.start_polygon_chain()
             self.plot_container.canvas.add_to_polygon_chain(starting_xs)
             res = solver.solve(system, starting_xs, precision, self._plot_iteration)
+            if res is None:
+                raise ValueError("method does not converge")
             self.plot_container.canvas.end_polygon_chain()
         except Exception as e:
             show_error_message(str(e))
